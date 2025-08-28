@@ -1,0 +1,38 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package_prefix
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package_prefix
+      module: buf.build/bufbuild/protovalidate
+    - file_option: go_package_prefix
+      module: buf.build/go-sphere/options
+    - file_option: go_package_prefix
+      module: buf.build/go-sphere/errors
+    - file_option: go_package_prefix
+      module: buf.build/go-sphere/binding
+  override:
+    - file_option: go_package_prefix
+      value: github.com/go-sphere/sphere-layout/api
+plugins:
+  - local: protoc-gen-go
+    out: api
+    opt: paths=source_relative
+  - local: protoc-gen-sphere-errors
+    out: api
+    opt: paths=source_relative
+  - local: protoc-gen-sphere
+    out: api
+    opt:
+      - paths=source_relative
+      - swagger_auth_header=// @Security ApiKeyAuth
+  - local: protoc-gen-route
+    out: api
+    opt:
+      - paths=source_relative
+      - options_key=bot
+      - request_model=github.com/go-sphere/sphere/social/telegram;Update
+      - response_model=github.com/go-sphere/sphere/social/telegram;Message
+      - extra_data_model=github.com/go-sphere/sphere/social/telegram;MethodExtraData
+      - extra_data_constructor=github.com/go-sphere/sphere/social/telegram;NewMethodExtraData
