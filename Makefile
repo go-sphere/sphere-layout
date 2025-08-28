@@ -162,15 +162,11 @@ install: ## Install dependencies tools
 	$(GO_INSTALL) github.com/bufbuild/buf/cmd/buf@latest
 	$(GO_INSTALL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 	$(GO_INSTALL) google.golang.org/protobuf/cmd/protoc-gen-go@latest
-ifeq ($(IGNORE_INSTALL_SPHERE_TOOLS),1)
-	@echo "Skipping sphere tools installation as IGNORE_INSTALL_SPHERE_TOOLS=1"
-else
 	$(GO_INSTALL) github.com/go-sphere/sphere-cli@latest
 	$(GO_INSTALL) github.com/go-sphere/protoc-gen-route@latest
 	$(GO_INSTALL) github.com/go-sphere/protoc-gen-sphere@latest
 	$(GO_INSTALL) github.com/go-sphere/protoc-gen-sphere-errors@latest
 	$(GO_INSTALL) github.com/go-sphere/protoc-gen-sphere-binding@latest
-endif
 
 init: ## Init all dependencies
 	$(GO) mod download
