@@ -10,9 +10,9 @@ require (
 	github.com/alitto/pond/v2 v2.5.0
 	github.com/gin-contrib/gzip v1.2.3
 	github.com/gin-gonic/gin v1.10.1
-	github.com/go-sphere/binding v0.0.0-20250828071635-07ce8e970ca8
-	github.com/go-sphere/errors v0.0.0-20250828072329-4d202540d60f
-	github.com/go-sphere/options v0.0.0-20250828072151-d28157ecb0d9
+	github.com/go-sphere/binding v0.0.1
+	github.com/go-sphere/errors v0.0.1
+	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.0-20250828080259-592cc02d8256
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0
