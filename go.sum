@@ -88,8 +88,8 @@ github.com/go-sphere/errors v0.0.1 h1:kdTFOB1L8yyNHaYgpYZPSHu/xeMsEkujmCpkzK+v3h
 github.com/go-sphere/errors v0.0.1/go.mod h1:xShlZuLMCNDjkn8IHMcKVeImtjw1ax8dZuhpcrwqhho=
 github.com/go-sphere/options v0.0.1 h1:UmctzcFlkkbpl/AX8zJchZBeCPW01JfbGpkWS+XirGo=
 github.com/go-sphere/options v0.0.1/go.mod h1:5UC9Sr5iQFuXZF+AbRi1I64St9K5hgQGefriZdoNf4U=
-github.com/go-sphere/sphere v0.0.0-20250828080259-592cc02d8256 h1:PCI0I2pOlKMw7Gl1tt9eZ86DzFkIxnQhqx+UzsqlDD4=
-github.com/go-sphere/sphere v0.0.0-20250828080259-592cc02d8256/go.mod h1:jXsxEJekuIlWMcplKhtS/4zXKqGr8roF3crcV1MhDCc=
+github.com/go-sphere/sphere v0.0.1 h1:zALbgd8439RBABgIIvngp96VIU6pGNnitBBp8b59qaQ=
+github.com/go-sphere/sphere v0.0.1/go.mod h1:jXsxEJekuIlWMcplKhtS/4zXKqGr8roF3crcV1MhDCc=
 github.com/go-sql-driver/mysql v1.9.3 h1:U/N249h2WzJ3Ukj8SowVFjdtZKfu9vlLZxjPXV1aweo=
 github.com/go-sql-driver/mysql v1.9.3/go.mod h1:qn46aNg1333BRMNU69Lq93t8du/dwxI64Gl8i5p1WMU=
 github.com/go-telegram/bot v1.17.0 h1:Hs0kGxSj97QFqOQP0zxduY/4tSx8QDzvNI9uVRS+zmY=

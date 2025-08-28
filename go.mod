@@ -13,7 +13,7 @@ require (
 	github.com/go-sphere/binding v0.0.1
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.0-20250828080259-592cc02d8256
+	github.com/go-sphere/sphere v0.0.1
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.7.0
