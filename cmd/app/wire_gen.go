@@ -56,7 +56,7 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 	fileConfig := conf.File
 	fileWeb := file.NewWebServer(fileConfig, s3Adapter)
 	dashInitialize := dashinit.NewDashInitialize(daoDao)
-	connectCleaner := conncleaner.NewConnectCleaner(entClient, cache)
+	connectCleaner := conncleaner.NewConnectCleaner(daoDao, cache)
 	application := newApplication(web, apiWeb, botBot, fileWeb, dashInitialize, connectCleaner)
 	return application, nil
 }

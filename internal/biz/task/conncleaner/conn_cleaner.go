@@ -3,17 +3,17 @@ package conncleaner
 import (
 	"context"
 
-	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
+	"github.com/go-sphere/sphere-layout/internal/pkg/dao"
 	"github.com/go-sphere/sphere/cache"
 	"golang.org/x/sync/errgroup"
 )
 
 type ConnectCleaner struct {
-	db    *ent.Client
+	db    *dao.Dao
 	cache cache.ByteCache
 }
 
-func NewConnectCleaner(db *ent.Client, cache cache.ByteCache) *ConnectCleaner {
+func NewConnectCleaner(db *dao.Dao, cache cache.ByteCache) *ConnectCleaner {
 	return &ConnectCleaner{
 		db:    db,
 		cache: cache,
