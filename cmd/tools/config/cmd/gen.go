@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"os"
 	"time"
 
 	"github.com/TBXark/confstore"
 	"github.com/go-sphere/sphere-layout/internal/config"
-	"github.com/go-sphere/sphere/core/safe"
 	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
 )
@@ -46,12 +44,7 @@ func init() {
 			conf.Database.Type = "sqlite3"
 			conf.Database.Path = "file:./var/data.db?cache=shared&mode=rwc"
 		}
-		file, err := os.Create(*output)
-		if err != nil {
-			return err
-		}
-		defer safe.IfErrorPresent("close file", file.Close)
-		err = confstore.Save(*output, conf)
+		err := confstore.Save(*output, conf)
 		if err != nil {
 			return err
 		}
