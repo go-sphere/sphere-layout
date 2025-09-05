@@ -1,7 +1,12 @@
 package config
 
 import (
-	"github.com/TBXark/confstore"
+	"context"
+	"errors"
+
+	"github.com/go-sphere/confstore"
+	"github.com/go-sphere/confstore/codec"
+	"github.com/go-sphere/confstore/provider"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/client"
 	"github.com/go-sphere/sphere-layout/internal/server/api"
 	"github.com/go-sphere/sphere-layout/internal/server/bot"
@@ -93,8 +98,22 @@ func setDefaultConfig(config *Config) *Config {
 	return config
 }
 
+func newConfProvider(path string) (provider.Provider, error) {
+	if provider.IsRemoteURL(path) {
+		return provider.NewHTTP(path, provider.WithTimeout(10)), nil
+	}
+	if provider.IsLocalPath(path) {
+		return provider.NewFile(path, provider.WithExpandEnv()), nil
+	}
+	return nil, errors.New("unsupported config path")
+}
+
 func NewConfig(path string) (*Config, error) {
-	config, err := confstore.Load[Config](path)
+	pro, err := newConfProvider(path)
+	if err != nil {
+		return nil, err
+	}
+	config, err := confstore.Load[Config](context.Background(), pro, codec.JsonCodec())
 	if err != nil {
 		return nil, err
 	}

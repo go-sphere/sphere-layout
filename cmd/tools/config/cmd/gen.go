@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"encoding/json"
+	"os"
 	"time"
 
-	"github.com/TBXark/confstore"
 	"github.com/go-sphere/sphere-layout/internal/config"
 	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
@@ -44,10 +45,10 @@ func init() {
 			conf.Database.Type = "sqlite3"
 			conf.Database.Path = "file:./var/data.db?cache=shared&mode=rwc"
 		}
-		err := confstore.Save(*output, conf)
+		raw, err := json.Marshal(conf)
 		if err != nil {
 			return err
 		}
-		return nil
+		return os.WriteFile(*output, raw, 0644)
 	}
 }
