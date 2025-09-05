@@ -7,13 +7,15 @@ import (
 	"github.com/go-sphere/confstore"
 	"github.com/go-sphere/confstore/codec"
 	"github.com/go-sphere/confstore/provider"
+	"github.com/go-sphere/confstore/provider/file"
+	"github.com/go-sphere/confstore/provider/http"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/client"
 	"github.com/go-sphere/sphere-layout/internal/server/api"
 	"github.com/go-sphere/sphere-layout/internal/server/bot"
 	"github.com/go-sphere/sphere-layout/internal/server/dash"
 	"github.com/go-sphere/sphere-layout/internal/server/docs"
 	"github.com/go-sphere/sphere/log"
-	"github.com/go-sphere/sphere/server/service/file"
+	fileserver "github.com/go-sphere/sphere/server/service/file"
 	"github.com/go-sphere/sphere/social/wechat"
 	"github.com/go-sphere/sphere/storage/local"
 	"github.com/go-sphere/sphere/utils/secure"
@@ -22,16 +24,16 @@ import (
 var BuildVersion = "dev"
 
 type Config struct {
-	Environments map[string]string `json:"environments" yaml:"environments"`
-	Log          *log.Config       `json:"log" yaml:"log"`
-	Database     *client.Config    `json:"database" yaml:"database"`
-	Dash         *dash.Config      `json:"dash" yaml:"dash"`
-	API          *api.Config       `json:"api" yaml:"api"`
-	File         *file.Config      `json:"file" yaml:"file"`
-	Docs         *docs.Config      `json:"docs" yaml:"docs"`
-	Storage      *local.Config     `json:"storage" yaml:"storage"`
-	Bot          *bot.Config       `json:"bot" yaml:"bot"`
-	WxMini       *wechat.Config    `json:"wx_mini" yaml:"wx_mini"`
+	Environments map[string]string  `json:"environments" yaml:"environments"`
+	Log          *log.Config        `json:"log" yaml:"log"`
+	Database     *client.Config     `json:"database" yaml:"database"`
+	Dash         *dash.Config       `json:"dash" yaml:"dash"`
+	API          *api.Config        `json:"api" yaml:"api"`
+	File         *fileserver.Config `json:"file" yaml:"file"`
+	Docs         *docs.Config       `json:"docs" yaml:"docs"`
+	Storage      *local.Config      `json:"storage" yaml:"storage"`
+	Bot          *bot.Config        `json:"bot" yaml:"bot"`
+	WxMini       *wechat.Config     `json:"wx_mini" yaml:"wx_mini"`
 }
 
 func NewEmptyConfig() *Config {
@@ -61,8 +63,8 @@ func NewEmptyConfig() *Config {
 				Address: "0.0.0.0:8899",
 			},
 		},
-		File: &file.Config{
-			HTTP: file.HTTPConfig{
+		File: &fileserver.Config{
+			HTTP: fileserver.HTTPConfig{
 				Address: "0.0.0.0:9900",
 				Cors: []string{
 					"http://localhost:*",
@@ -99,11 +101,11 @@ func setDefaultConfig(config *Config) *Config {
 }
 
 func newConfProvider(path string) (provider.Provider, error) {
-	if provider.IsRemoteURL(path) {
-		return provider.NewHTTP(path, provider.WithTimeout(10)), nil
+	if http.IsRemoteURL(path) {
+		return http.New(path, http.WithTimeout(10)), nil
 	}
-	if provider.IsLocalPath(path) {
-		return provider.NewFile(path, provider.WithExpandEnv()), nil
+	if file.IsLocalPath(path) {
+		return file.New(path, file.WithExpandEnv()), nil
 	}
 	return nil, errors.New("unsupported config path")
 }
