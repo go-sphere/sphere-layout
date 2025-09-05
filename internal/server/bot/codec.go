@@ -13,8 +13,7 @@ var _ botv1.MenuServiceBotCodec = &MenuServiceBotCodec{}
 type MenuServiceBotCodec struct{}
 
 func (m MenuServiceBotCodec) DecodeUpdateCountRequest(ctx context.Context, request *telegram.Update) (*botv1.UpdateCountRequest, error) {
-	res := UnmarshalUpdateDataWithDefault[botv1.UpdateCountRequest](request, botv1.UpdateCountRequest{})
-	return &res, nil
+	return UnmarshalUpdateDataWithDefault(request, &botv1.UpdateCountRequest{})
 }
 
 func (m MenuServiceBotCodec) EncodeUpdateCountResponse(ctx context.Context, response *botv1.UpdateCountResponse) (*telegram.Message, error) {

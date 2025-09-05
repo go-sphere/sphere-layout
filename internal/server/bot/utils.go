@@ -22,14 +22,18 @@ func UnmarshalUpdateData[T any](update *telegram.Update) (*T, error) {
 	}
 }
 
-func UnmarshalUpdateDataWithDefault[T any](update *telegram.Update, defaultValue T) T {
+func UnmarshalUpdateDataWithDefault[T any](update *telegram.Update, defaultValue *T) (*T, error) {
 	if update != nil && update.CallbackQuery != nil {
 		_, data, err := telegram.UnmarshalData[T](update.CallbackQuery.Data)
-		if data != nil && err == nil {
-			return *data
+		if err != nil {
+			if defaultValue != nil {
+				return defaultValue, nil
+			} else {
+				return nil, err
+			}
 		}
-		return defaultValue
+		return data, nil
 	} else {
-		return defaultValue
+		return defaultValue, nil
 	}
 }
