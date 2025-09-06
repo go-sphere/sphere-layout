@@ -9,7 +9,7 @@ require (
 	github.com/alitto/pond/v2 v2.5.0
 	github.com/gin-contrib/gzip v1.2.3
 	github.com/gin-gonic/gin v1.10.1
-	github.com/go-sphere/binding v0.0.1
+	github.com/go-sphere/binding v0.0.2
 	github.com/go-sphere/confstore v0.0.2
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/options v0.0.1

@@ -14,7 +14,8 @@ CURRENT_ARCH    := $(shell uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
 BUILD_PLATFORMS ?= linux/amd64 linux/arm64
 
 # ---------- Docker Config ----------
-DOCKER_IMAGE    ?= ghcr.io/tbxark/$(MODULE_NAME)
+DOCKER_VER      ?= $(BUILD_TAG)_$(BUILD_TIME)
+DOCKER_IMAGE    ?= ghcr.io/tbxark/$(MODULE_NAME):${DOCKER_VER}
 DOCKER_FILE     ?= cmd/app/Dockerfile
 
 # ---------- Dashboard Config ----------
