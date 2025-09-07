@@ -91,7 +91,7 @@ func NewEmptyConfig() *Config {
 }
 
 func NewConfig(path string) (*Config, error) {
-	prov, err := provider.Selector(
+	config, err := confstore.Load[Config](provider.NewSelect(
 		path,
 		provider.If(file.IsLocalPath, func(s string) provider.Provider {
 			return file.New(path, file.WithExpandEnv())
@@ -99,11 +99,7 @@ func NewConfig(path string) (*Config, error) {
 		provider.If(http.IsRemoteURL, func(s string) provider.Provider {
 			return http.New(path, http.WithTimeout(10))
 		}),
-	)
-	if err != nil {
-		return nil, err
-	}
-	config, err := confstore.Load[Config](prov, codec.JsonCodec())
+	), codec.JsonCodec())
 	if err != nil {
 		return nil, err
 	}
