@@ -106,8 +106,8 @@ github.com/go-playground/validator/v10 v10.27.0 h1:w8+XrWVMhGkxOaaowyKH35gFydVHO
 github.com/go-playground/validator/v10 v10.27.0/go.mod h1:I5QpIEbmr8On7W0TktmJAumgzX4CA1XNl4ZmDuVHKKo=
 github.com/go-sphere/binding v0.0.2 h1:q2/u4KO+7s4KH/ZqTDBnwqxCM3Qa51RsiJkof7jfKFk=
 github.com/go-sphere/binding v0.0.2/go.mod h1:0mukFqHNQULXOcTDSMsB3S+hfS/de+ooWUOQSQU1yrQ=
-github.com/go-sphere/confstore v0.0.2 h1:9nuPS86wlv5Rpi+fnnFNq9tDVxgfAOK6uOPiASsgubo=
-github.com/go-sphere/confstore v0.0.2/go.mod h1:rvp2oSOW4x3E8JU0efD9JtHpBM2M3VIqM4rohoSMr34=
+github.com/go-sphere/confstore v0.0.3 h1:LRMRnEDu++JZGt4onMUHKAcQ27f+8qz553S7knIyHTE=
+github.com/go-sphere/confstore v0.0.3/go.mod h1:rvp2oSOW4x3E8JU0efD9JtHpBM2M3VIqM4rohoSMr34=
 github.com/go-sphere/errors v0.0.1 h1:kdTFOB1L8yyNHaYgpYZPSHu/xeMsEkujmCpkzK+v3hQ=
 github.com/go-sphere/errors v0.0.1/go.mod h1:xShlZuLMCNDjkn8IHMcKVeImtjw1ax8dZuhpcrwqhho=
 github.com/go-sphere/options v0.0.1 h1:UmctzcFlkkbpl/AX8zJchZBeCPW01JfbGpkWS+XirGo=

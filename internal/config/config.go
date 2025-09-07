@@ -1,9 +1,6 @@
 package config
 
 import (
-	"context"
-	"errors"
-
 	"github.com/go-sphere/confstore"
 	"github.com/go-sphere/confstore/codec"
 	"github.com/go-sphere/confstore/provider"
@@ -93,31 +90,25 @@ func NewEmptyConfig() *Config {
 	}
 }
 
-func setDefaultConfig(config *Config) *Config {
+func NewConfig(path string) (*Config, error) {
+	prov, err := provider.Selector(
+		path,
+		provider.If(file.IsLocalPath, func(s string) provider.Provider {
+			return file.New(path, file.WithExpandEnv())
+		}),
+		provider.If(http.IsRemoteURL, func(s string) provider.Provider {
+			return http.New(path, http.WithTimeout(10))
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	config, err := confstore.Load[Config](prov, codec.JsonCodec())
+	if err != nil {
+		return nil, err
+	}
 	if config.Log == nil {
 		config.Log = log.NewDefaultConfig()
 	}
-	return config
-}
-
-func newConfProvider(path string) (provider.Provider, error) {
-	if http.IsRemoteURL(path) {
-		return http.New(path, http.WithTimeout(10)), nil
-	}
-	if file.IsLocalPath(path) {
-		return file.New(path, file.WithExpandEnv()), nil
-	}
-	return nil, errors.New("unsupported config path")
-}
-
-func NewConfig(path string) (*Config, error) {
-	pro, err := newConfProvider(path)
-	if err != nil {
-		return nil, err
-	}
-	config, err := confstore.Load[Config](context.Background(), pro, codec.JsonCodec())
-	if err != nil {
-		return nil, err
-	}
-	return setDefaultConfig(config), nil
+	return config, nil
 }
