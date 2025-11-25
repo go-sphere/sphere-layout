@@ -34,25 +34,6 @@ func main() {
 	}
 }
 
-func createBindFile(outFile string) error {
-	if outFile == "" {
-		return fmt.Errorf("outFile is required")
-	}
-	content, err := bind.GenFile(bindItems())
-	if err != nil {
-		return err
-	}
-	formattedSrc, err := imports.Process(outFile, []byte(content), nil)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(outFile, formattedSrc, 0o644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func createMappersFile(schema string, mapperDir string) error {
 	return autoproto.GenerateMapper(&autoproto.MapperOptions{
 		Graph:         autoproto.NewDefaultOptions(schema),
@@ -60,12 +41,15 @@ func createMappersFile(schema string, mapperDir string) error {
 		MapperPackage: "mapper",
 		EntPackage:    reflect.ValueOf(ent.Admin{}).Type().PkgPath(),
 		ProtoPkgPath:  reflect.ValueOf(entpb.Admin{}).Type().PkgPath(),
-		ProtoPkgName:  "entp",
+		ProtoPkgName:  "entpb",
 	})
 }
 
-func bindItems() *bind.GenFileConf {
-	return &bind.GenFileConf{
+func createBindFile(outFile string) error {
+	if outFile == "" {
+		return fmt.Errorf("outFile is required")
+	}
+	content, err := bind.GenFile(&bind.GenFileConf{
 		Entities: []bind.GenFileEntityConf{
 			{
 				Actions: []any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
@@ -96,5 +80,17 @@ func bindItems() *bind.GenFileConf {
 				},
 			},
 		},
+	})
+	if err != nil {
+		return err
 	}
+	formattedSrc, err := imports.Process(outFile, []byte(content), nil)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(outFile, formattedSrc, 0o644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
