@@ -4,10 +4,12 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"log"
 	"os"
+	"reflect"
 
+	"github.com/go-sphere/entc-extensions/autoproto"
 	"github.com/go-sphere/sphere-layout/api/entpb"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
@@ -20,23 +22,46 @@ import (
 )
 
 func main() {
-	file := flag.String("file", "./internal/pkg/render/bind.go", "file path")
-	flag.Parse()
-	if *file == "" {
-		log.Fatal("file is required")
+	bindFile := "./internal/pkg/render/bind.go"
+	mapperDir := "./internal/pkg/render/mapper"
+	schemaDir := "./internal/pkg/database/schema"
+
+	if err := createBindFile(bindFile); err != nil {
+		log.Fatal(err)
+	}
+	if err := createMappersFile(schemaDir, mapperDir); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func createBindFile(outFile string) error {
+	if outFile == "" {
+		return fmt.Errorf("outFile is required")
 	}
 	content, err := bind.GenFile(bindItems())
 	if err != nil {
-		log.Fatalf("generate bind code failed: %v", err)
+		return err
 	}
-	formattedSrc, err := imports.Process(*file, []byte(content), nil)
+	formattedSrc, err := imports.Process(outFile, []byte(content), nil)
 	if err != nil {
-		log.Fatalf("format code failed: %v", err)
+		return err
 	}
-	err = os.WriteFile(*file, formattedSrc, 0o644)
+	err = os.WriteFile(outFile, formattedSrc, 0o644)
 	if err != nil {
-		log.Fatalf("write file failed: %v", err)
+		return err
 	}
+	return nil
+}
+
+func createMappersFile(schema string, mapperDir string) error {
+	return autoproto.GenerateMapper(&autoproto.MapperOptions{
+		Graph:         autoproto.NewDefaultOptions(schema),
+		MapperDir:     mapperDir,
+		MapperPackage: "mapper",
+		EntPackage:    reflect.ValueOf(ent.Admin{}).Type().PkgPath(),
+		ProtoPkgPath:  reflect.ValueOf(entpb.Admin{}).Type().PkgPath(),
+		ProtoPkgName:  "entp",
+	})
 }
 
 func bindItems() *bind.GenFileConf {

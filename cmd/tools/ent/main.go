@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/schema/field"
+	"github.com/go-sphere/entc-extensions/autoproto"
 )
 
 func main() {
@@ -28,7 +29,10 @@ func main() {
 			gen.FeatureUpsert,
 			gen.FeatureLock,
 		},
-	})
+	}, entc.Extensions(autoproto.NewAutoProtoExtension(&autoproto.ProtoOptions{
+		Graph:    autoproto.NewDefaultOptions("./internal/pkg/database/schema"),
+		ProtoDir: "./proto",
+	})))
 	if err != nil {
 		log.Fatal("running ent codegen:", err)
 	}

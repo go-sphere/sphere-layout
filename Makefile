@@ -74,7 +74,6 @@ gen/db: ## Generate ent code
 	$(INTERNAL_TOOLS) ./cmd/tools/ent
 
 gen/proto: gen/db ## Generate proto files and run protoc plugins
-	$(SPHERE_CLI) entproto --path=./internal/pkg/database/schema
 	$(BUF_CLI) dep update
 	$(BUF_CLI) dep prune
 	$(BUF_CLI) generate
