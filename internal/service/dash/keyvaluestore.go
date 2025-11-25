@@ -4,14 +4,14 @@ import (
 	"context"
 
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
-	"github.com/go-sphere/sphere-layout/internal/pkg/render"
+	"github.com/go-sphere/sphere-layout/internal/pkg/render/entbind"
 	"github.com/go-sphere/sphere/database/mapper"
 )
 
 var _ dashv1.KeyValueStoreServiceHTTPServer = (*Service)(nil)
 
 func (s *Service) CreateKeyValueStore(ctx context.Context, request *dashv1.CreateKeyValueStoreRequest) (*dashv1.CreateKeyValueStoreResponse, error) {
-	item, err := render.CreateKeyValueStore(s.db.KeyValueStore.Create(), request.KeyValueStore).Save(ctx)
+	item, err := entbind.CreateKeyValueStore(s.db.KeyValueStore.Create(), request.KeyValueStore).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (s *Service) ListKeyValueStores(ctx context.Context, request *dashv1.ListKe
 }
 
 func (s *Service) UpdateKeyValueStore(ctx context.Context, request *dashv1.UpdateKeyValueStoreRequest) (*dashv1.UpdateKeyValueStoreResponse, error) {
-	item, err := render.UpdateOneKeyValueStore(
+	item, err := entbind.UpdateOneKeyValueStore(
 		s.db.KeyValueStore.UpdateOneID(request.KeyValueStore.Id),
 		request.KeyValueStore,
 	).Save(ctx)

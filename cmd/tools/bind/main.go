@@ -4,12 +4,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
-	"reflect"
 
-	"github.com/go-sphere/entc-extensions/autoproto"
+	"github.com/go-sphere/entc-extensions/autoproto/bind"
+	"github.com/go-sphere/entc-extensions/autoproto/mapper"
+	"github.com/go-sphere/entc-extensions/autoproto/utils/inspect"
 	"github.com/go-sphere/sphere-layout/api/entpb"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
@@ -17,41 +16,52 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/adminsession"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/keyvaluestore"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/user"
-	"github.com/go-sphere/sphere/database/bind"
-	"golang.org/x/tools/imports"
 )
 
 func main() {
-	bindFile := "./internal/pkg/render/bind.go"
-	mapperDir := "./internal/pkg/render/mapper"
-	schemaDir := "./internal/pkg/database/schema"
+	bindDir := "./internal/pkg/render/entbind"
+	mapperDir := "./internal/pkg/render/entmap"
 
-	if err := createBindFile(bindFile); err != nil {
+	if err := createBindFile(bindDir); err != nil {
 		log.Fatal(err)
 	}
-	if err := createMappersFile(schemaDir, mapperDir); err != nil {
+	if err := createMappersFile(mapperDir); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func createMappersFile(schema string, mapperDir string) error {
-	return autoproto.GenerateMapper(&autoproto.MapperOptions{
-		Graph:         autoproto.NewDefaultOptions(schema),
-		MapperDir:     mapperDir,
-		MapperPackage: "mapper",
-		EntPackage:    reflect.ValueOf(ent.Admin{}).Type().PkgPath(),
-		ProtoPkgPath:  reflect.ValueOf(entpb.Admin{}).Type().PkgPath(),
-		ProtoPkgName:  "entpb",
+func createMappersFile(outDir string) error {
+	return mapper.GenerateFiles(&mapper.GenFilesConf{
+		Dir:     outDir,
+		Package: "entmap",
+		Entities: []mapper.GenFileEntityConf{
+			{
+				Source: ent.Admin{},
+				Target: entpb.Admin{},
+			},
+			{
+				Source: ent.AdminSession{},
+				Target: entpb.AdminSession{},
+			},
+			{
+				Source: ent.User{},
+				Target: sharedv1.User{},
+			},
+			{
+				Source: ent.KeyValueStore{},
+				Target: entpb.KeyValueStore{},
+			},
+		},
 	})
 }
 
-func createBindFile(outFile string) error {
-	if outFile == "" {
-		return fmt.Errorf("outFile is required")
-	}
-	content, err := bind.GenFile(&bind.GenFileConf{
+func createBindFile(outDir string) error {
+	return bind.GenFiles(&bind.GenFilesConf{
+		Dir:     outDir,
+		Package: "entbind",
 		Entities: []bind.GenFileEntityConf{
 			{
+				Name:    inspect.TypeName(entpb.Admin{}),
 				Actions: []any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
 				ConfigBuilder: func(act any) *bind.GenFuncConf {
 					return bind.NewGenFuncConf(ent.Admin{}, entpb.Admin{}, act).
@@ -59,6 +69,7 @@ func createBindFile(outFile string) error {
 				},
 			},
 			{
+				Name:    inspect.TypeName(entpb.AdminSession{}),
 				Actions: []any{ent.AdminSessionCreate{}, ent.AdminSessionUpdateOne{}},
 				ConfigBuilder: func(act any) *bind.GenFuncConf {
 					return bind.NewGenFuncConf(ent.AdminSession{}, entpb.AdminSession{}, act).
@@ -66,6 +77,7 @@ func createBindFile(outFile string) error {
 				},
 			},
 			{
+				Name:    inspect.TypeName(entpb.User{}),
 				Actions: []any{ent.UserCreate{}, ent.UserUpdateOne{}},
 				ConfigBuilder: func(act any) *bind.GenFuncConf {
 					return bind.NewGenFuncConf(ent.User{}, sharedv1.User{}, act).
@@ -73,6 +85,7 @@ func createBindFile(outFile string) error {
 				},
 			},
 			{
+				Name:    inspect.TypeName(entpb.KeyValueStore{}),
 				Actions: []any{ent.KeyValueStoreCreate{}, ent.KeyValueStoreUpdateOne{}, ent.KeyValueStoreUpsertOne{}},
 				ConfigBuilder: func(act any) *bind.GenFuncConf {
 					return bind.NewGenFuncConf(ent.KeyValueStore{}, entpb.KeyValueStore{}, act).
@@ -81,16 +94,4 @@ func createBindFile(outFile string) error {
 			},
 		},
 	})
-	if err != nil {
-		return err
-	}
-	formattedSrc, err := imports.Process(outFile, []byte(content), nil)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(outFile, formattedSrc, 0o644)
-	if err != nil {
-		return err
-	}
-	return nil
 }

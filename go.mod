@@ -11,7 +11,7 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-sphere/binding v0.0.2
 	github.com/go-sphere/confstore v0.0.4
-	github.com/go-sphere/entc-extensions v0.0.0-20251125043556-3ccac292bf11
+	github.com/go-sphere/entc-extensions v0.0.0-20251125102730-d5126d33c4e4
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.1
@@ -22,7 +22,6 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag v1.16.6
 	golang.org/x/sync v0.18.0
-	golang.org/x/tools v0.39.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20251124214823-79d6a2a48846
 	google.golang.org/protobuf v1.36.10
 )
@@ -114,6 +113,7 @@ require (
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
+	golang.org/x/tools v0.39.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251124214823-79d6a2a48846 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

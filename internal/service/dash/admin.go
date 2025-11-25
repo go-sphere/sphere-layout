@@ -3,10 +3,10 @@ package dash
 import (
 	"context"
 
+	"github.com/go-sphere/entc-extensions/autoproto/bind"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/admin"
-	"github.com/go-sphere/sphere-layout/internal/pkg/render"
-	"github.com/go-sphere/sphere/database/bind"
+	"github.com/go-sphere/sphere-layout/internal/pkg/render/entbind"
 	"github.com/go-sphere/sphere/database/mapper"
 	"github.com/go-sphere/sphere/utils/secure"
 )
@@ -16,7 +16,7 @@ var _ dashv1.AdminServiceHTTPServer = (*Service)(nil)
 func (s *Service) CreateAdmin(ctx context.Context, request *dashv1.CreateAdminRequest) (*dashv1.CreateAdminResponse, error) {
 	request.Admin.Avatar = s.storage.ExtractKeyFromURL(request.Admin.Avatar)
 	request.Admin.Password = secure.CryptPassword(request.Admin.Password)
-	u, err := render.CreateAdmin(s.db.Admin.Create(), request.Admin).Save(ctx)
+	u, err := entbind.CreateAdmin(s.db.Admin.Create(), request.Admin).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (s *Service) UpdateAdmin(ctx context.Context, req *dashv1.UpdateAdminReques
 	if req.Admin.Password != "" {
 		req.Admin.Password = secure.CryptPassword(req.Admin.Password)
 	}
-	u, err := render.UpdateOneAdmin(
+	u, err := entbind.UpdateOneAdmin(
 		s.db.Admin.UpdateOneID(req.Admin.Id),
 		req.Admin,
 		bind.IgnoreSetZeroField(admin.FieldPassword),
