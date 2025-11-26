@@ -46,7 +46,7 @@ func (s *Service) ListKeyValueStores(ctx context.Context, request *dashv1.ListKe
 	if err != nil {
 		return nil, err
 	}
-	page, size := conv.Page(count, int(request.PageSize), conv.DefaultPageSize)
+	page, size := conv.Page(count, int(request.PageSize))
 	all, err := query.Clone().Limit(size).Order(keyvaluestore.ByID(sql.OrderDesc())).Offset(size * int(request.Page)).All(ctx)
 	if err != nil {
 		return nil, err

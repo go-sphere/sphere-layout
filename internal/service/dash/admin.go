@@ -56,7 +56,7 @@ func (s *Service) ListAdmins(ctx context.Context, request *dashv1.ListAdminsRequ
 	if err != nil {
 		return nil, err
 	}
-	page, size := conv.Page(count, int(request.PageSize), conv.DefaultPageSize)
+	page, size := conv.Page(count, int(request.PageSize))
 	all, err := query.Clone().Limit(size).Order(admin.ByID(sql.OrderDesc())).Offset(size * int(request.Page)).All(ctx)
 	if err != nil {
 		return nil, err
