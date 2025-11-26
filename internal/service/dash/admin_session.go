@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/adminsession"
-	"github.com/go-sphere/sphere/database/mapper"
+	"github.com/go-sphere/sphere-layout/internal/pkg/render"
 )
 
 var _ dashv1.AdminSessionServiceHTTPServer = (*Service)(nil)
@@ -29,8 +30,8 @@ func (s *Service) ListAdminSessions(ctx context.Context, request *dashv1.ListAdm
 	if err != nil {
 		return nil, err
 	}
-	page, size := mapper.Page(count, int(request.PageSize), mapper.DefaultPageSize)
-	all, err := query.Clone().Limit(size).Offset(size * int(request.Page)).All(ctx)
+	page, size := render.Page(count, int(request.PageSize), render.DefaultPageSize)
+	all, err := query.Clone().Limit(size).Order(adminsession.ByID(sql.OrderDesc())).Offset(size * int(request.Page)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,7 @@ func (s *Service) ListAdminSessions(ctx context.Context, request *dashv1.ListAdm
 		_ = s.db.AdminSession.Update().Where(adminsession.IDIn(revoked...)).SetIsRevoked(true).Exec(ctx)
 	}
 	return &dashv1.ListAdminSessionsResponse{
-		AdminSessions: mapper.Map(all, s.render.AdminSession),
+		AdminSessions: render.Map(all, s.render.AdminSession),
 		TotalSize:     int64(count),
 		TotalPage:     int64(page),
 	}, nil

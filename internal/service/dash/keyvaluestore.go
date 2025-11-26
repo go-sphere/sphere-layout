@@ -3,9 +3,11 @@ package dash
 import (
 	"context"
 
+	"entgo.io/ent/dialect/sql"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
+	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/keyvaluestore"
+	"github.com/go-sphere/sphere-layout/internal/pkg/render"
 	"github.com/go-sphere/sphere-layout/internal/pkg/render/entbind"
-	"github.com/go-sphere/sphere/database/mapper"
 )
 
 var _ dashv1.KeyValueStoreServiceHTTPServer = (*Service)(nil)
@@ -44,13 +46,13 @@ func (s *Service) ListKeyValueStores(ctx context.Context, request *dashv1.ListKe
 	if err != nil {
 		return nil, err
 	}
-	page, size := mapper.Page(count, int(request.PageSize), mapper.DefaultPageSize)
-	all, err := query.Clone().Limit(size).Offset(size * int(request.Page)).All(ctx)
+	page, size := render.Page(count, int(request.PageSize), render.DefaultPageSize)
+	all, err := query.Clone().Limit(size).Order(keyvaluestore.ByID(sql.OrderDesc())).Offset(size * int(request.Page)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return &dashv1.ListKeyValueStoresResponse{
-		KeyValueStores: mapper.Map(all, s.render.KeyValueStore),
+		KeyValueStores: render.Map(all, s.render.KeyValueStore),
 		TotalSize:      int64(count),
 		TotalPage:      int64(page),
 	}, nil

@@ -6,7 +6,6 @@ import (
 
 	"buf.build/go/protovalidate"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
-	"github.com/go-sphere/sphere/database/mapper"
 	"github.com/go-sphere/sphere/server/ginx"
 )
 
@@ -29,7 +28,7 @@ func init() {
 }
 
 func ValidationError(err *protovalidate.ValidationError) (int32, int32, string) {
-	return 0, 400, strings.Join(mapper.Map(err.Violations, func(s *protovalidate.Violation) string {
+	return 0, 400, strings.Join(Map(err.Violations, func(s *protovalidate.Violation) string {
 		return s.Proto.GetMessage()
 	}), ",")
 }
