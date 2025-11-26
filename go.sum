@@ -111,8 +111,8 @@ github.com/go-sphere/binding v0.0.2 h1:q2/u4KO+7s4KH/ZqTDBnwqxCM3Qa51RsiJkof7jfK
 github.com/go-sphere/binding v0.0.2/go.mod h1:0mukFqHNQULXOcTDSMsB3S+hfS/de+ooWUOQSQU1yrQ=
 github.com/go-sphere/confstore v0.0.4 h1:LJoui4Q1qryvW/rqKHAdEc0j2eLWH2Eb76LvY0vqcrk=
 github.com/go-sphere/confstore v0.0.4/go.mod h1:rvp2oSOW4x3E8JU0efD9JtHpBM2M3VIqM4rohoSMr34=
-github.com/go-sphere/entc-extensions v0.0.2 h1:HQGEir8VRLxxK/hEhH363umLM+9T3wiYgBcLOzPre84=
-github.com/go-sphere/entc-extensions v0.0.2/go.mod h1:7Te8rh1hshPxYWRQHPZ3VNgqvWtecl8yGrzrkxCePlc=
+github.com/go-sphere/entc-extensions v0.0.3-beta.1 h1:uDdrlYkEosGVBL29M0TtwiYy9k2hYZf6GBbNoe9DeFE=
+github.com/go-sphere/entc-extensions v0.0.3-beta.1/go.mod h1:7Te8rh1hshPxYWRQHPZ3VNgqvWtecl8yGrzrkxCePlc=
 github.com/go-sphere/errors v0.0.1 h1:kdTFOB1L8yyNHaYgpYZPSHu/xeMsEkujmCpkzK+v3hQ=
 github.com/go-sphere/errors v0.0.1/go.mod h1:xShlZuLMCNDjkn8IHMcKVeImtjw1ax8dZuhpcrwqhho=
 github.com/go-sphere/options v0.0.1 h1:UmctzcFlkkbpl/AX8zJchZBeCPW01JfbGpkWS+XirGo=

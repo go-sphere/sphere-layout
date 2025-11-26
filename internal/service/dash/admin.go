@@ -3,7 +3,7 @@ package dash
 import (
 	"context"
 
-	"github.com/go-sphere/entc-extensions/autoproto/bind"
+	"github.com/go-sphere/entc-extensions/autoproto/gen/bind"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/admin"
 	"github.com/go-sphere/sphere-layout/internal/pkg/render/entbind"

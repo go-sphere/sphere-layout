@@ -6,8 +6,8 @@ package main
 import (
 	"log"
 
-	"github.com/go-sphere/entc-extensions/autoproto/bind"
-	"github.com/go-sphere/entc-extensions/autoproto/mapper"
+	"github.com/go-sphere/entc-extensions/autoproto/gen"
+	"github.com/go-sphere/entc-extensions/autoproto/gen/conf"
 	"github.com/go-sphere/sphere-layout/api/entpb"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
@@ -21,80 +21,45 @@ func main() {
 	bindDir := "./internal/pkg/render/entbind"
 	mapperDir := "./internal/pkg/render/entmap"
 
-	if err := createBindFile(bindDir); err != nil {
+	if err := gen.MapperFiles(createFilesConf(mapperDir, "entmap")); err != nil {
 		log.Fatal(err)
 	}
-	if err := createMappersFile(mapperDir); err != nil {
+	if err := gen.BindFiles(createFilesConf(bindDir, "entbind")); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func createMappersFile(outDir string) error {
-	return mapper.GenerateFiles(&mapper.GenFilesConf{
-		Dir:     outDir,
-		Package: "entmap",
-		Entities: []mapper.GenFileEntityConf{
-			{
-				Source: ent.Admin{},
-				Target: entpb.Admin{},
-				IgnoreFields: []string{
-					admin.FieldPassword,
-				},
-			},
-			{
-				Source: ent.AdminSession{},
-				Target: entpb.AdminSession{},
-			},
-			{
-				Source: ent.User{},
-				Target: sharedv1.User{},
-			},
-			{
-				Source: ent.KeyValueStore{},
-				Target: entpb.KeyValueStore{},
-			},
+func createFilesConf(dir, pkg string) *conf.FilesConf {
+	return &conf.FilesConf{
+		Dir:                  dir,
+		Package:              pkg,
+		RemoveBeforeGenerate: false,
+		Entities: []*conf.EntityConf{
+			conf.NewEntity(
+				ent.Admin{},
+				entpb.Admin{},
+				[]any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
+				conf.WithIgnoreFields(admin.FieldCreatedAt, admin.FieldUpdatedAt),
+			),
+			conf.NewEntity(
+				ent.AdminSession{},
+				entpb.AdminSession{},
+				[]any{ent.AdminSessionCreate{}, ent.AdminSessionUpdateOne{}},
+				conf.WithIgnoreFields(adminsession.FieldCreatedAt, adminsession.FieldUpdatedAt),
+			),
+			conf.NewEntity(
+				ent.KeyValueStore{},
+				entpb.KeyValueStore{},
+				[]any{ent.KeyValueStoreCreate{}, ent.KeyValueStoreUpdateOne{}, ent.KeyValueStoreUpsertOne{}},
+				conf.WithIgnoreFields(keyvaluestore.FieldCreatedAt, keyvaluestore.FieldUpdatedAt),
+			),
+			conf.NewEntity(
+				ent.User{},
+				sharedv1.User{},
+				[]any{ent.UserCreate{}, ent.UserUpdateOne{}},
+				conf.WithIgnoreFields(user.FieldCreatedAt, user.FieldUpdatedAt),
+			),
 		},
-	})
-}
-
-func createBindFile(outDir string) error {
-	return bind.GenFiles(&bind.GenFilesConf{
-		Dir:     outDir,
-		Package: "entbind",
-		Entities: []bind.GenFileEntityConf{
-			{
-
-				Source:  ent.Admin{},
-				Target:  entpb.Admin{},
-				Actions: []any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
-				Options: []bind.GenBindConfOption{
-					bind.WithIgnoreFields(admin.FieldCreatedAt, admin.FieldUpdatedAt),
-				},
-			},
-			{
-				Source:  ent.AdminSession{},
-				Target:  entpb.AdminSession{},
-				Actions: []any{ent.AdminSessionCreate{}, ent.AdminSessionUpdateOne{}},
-				Options: []bind.GenBindConfOption{
-					bind.WithIgnoreFields(adminsession.FieldCreatedAt, adminsession.FieldUpdatedAt),
-				},
-			},
-			{
-				Source:  ent.User{},
-				Target:  sharedv1.User{},
-				Actions: []any{ent.UserCreate{}, ent.UserUpdateOne{}},
-				Options: []bind.GenBindConfOption{
-					bind.WithIgnoreFields(user.FieldCreatedAt, user.FieldUpdatedAt),
-				},
-			},
-			{
-				Source:  ent.KeyValueStore{},
-				Target:  entpb.KeyValueStore{},
-				Actions: []any{ent.KeyValueStoreCreate{}, ent.KeyValueStoreUpdateOne{}, ent.KeyValueStoreUpsertOne{}},
-				Options: []bind.GenBindConfOption{
-					bind.WithIgnoreFields(keyvaluestore.FieldCreatedAt, keyvaluestore.FieldUpdatedAt),
-				},
-			},
-		},
-	})
+		ExtraImports: nil,
+	}
 }
