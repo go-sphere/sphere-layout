@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"buf.build/go/protovalidate"
+	"github.com/go-sphere/sphere-layout/internal/pkg/conv"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
 	"github.com/go-sphere/sphere/server/ginx"
 )
@@ -28,7 +29,7 @@ func init() {
 }
 
 func ValidationError(err *protovalidate.ValidationError) (int32, int32, string) {
-	return 0, 400, strings.Join(Map(err.Violations, func(s *protovalidate.Violation) string {
+	return 0, 400, strings.Join(conv.Map(err.Violations, func(s *protovalidate.Violation) string {
 		return s.Proto.GetMessage()
 	}), ",")
 }
