@@ -3,7 +3,6 @@ package dash
 import (
 	"context"
 
-	"github.com/go-sphere/entc-extensions/autoproto/gen/bind"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/admin"
 	"github.com/go-sphere/sphere-layout/internal/pkg/render/entbind"
@@ -75,7 +74,7 @@ func (s *Service) UpdateAdmin(ctx context.Context, req *dashv1.UpdateAdminReques
 	u, err := entbind.UpdateOneAdmin(
 		s.db.Admin.UpdateOneID(req.Admin.Id),
 		req.Admin,
-		bind.IgnoreSetZeroField(admin.FieldPassword),
+		entbind.IgnoreSetZeroField(admin.FieldPassword),
 	).Save(ctx)
 	if err != nil {
 		return nil, err

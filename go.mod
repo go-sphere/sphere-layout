@@ -11,7 +11,7 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-sphere/binding v0.0.2
 	github.com/go-sphere/confstore v0.0.4
-	github.com/go-sphere/entc-extensions v0.0.3-beta.1
+	github.com/go-sphere/entc-extensions v0.0.3-beta.2
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.1
