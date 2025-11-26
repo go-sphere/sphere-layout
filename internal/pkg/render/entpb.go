@@ -8,9 +8,6 @@ import (
 )
 
 func (r *Render) AdminLite(value *ent.Admin) *entpb.Admin {
-	if value == nil {
-		return nil
-	}
 	return &entpb.Admin{
 		Id:       value.ID,
 		Nickname: value.Nickname,
@@ -19,9 +16,6 @@ func (r *Render) AdminLite(value *ent.Admin) *entpb.Admin {
 }
 
 func (r *Render) UserLite(value *ent.User) *sharedv1.User {
-	if value == nil {
-		return nil
-	}
 	val, _ := entmap.ToProtoUser(value, func(source *ent.User, target *sharedv1.User) error {
 		target.Avatar = r.storage.GenerateURL(source.Avatar)
 		return nil
@@ -30,9 +24,6 @@ func (r *Render) UserLite(value *ent.User) *sharedv1.User {
 }
 
 func (r *Render) Admin(value *ent.Admin) *entpb.Admin {
-	if value == nil {
-		return nil
-	}
 	val, _ := entmap.ToProtoAdmin(value, func(source *ent.Admin, target *entpb.Admin) error {
 		target.Avatar = r.storage.GenerateURL(source.Avatar)
 		target.Password = ""
@@ -42,9 +33,6 @@ func (r *Render) Admin(value *ent.Admin) *entpb.Admin {
 }
 
 func (r *Render) User(value *ent.User) *sharedv1.User {
-	if value == nil {
-		return nil
-	}
 	val, _ := entmap.ToProtoUser(value, func(source *ent.User, target *sharedv1.User) error {
 		target.Avatar = r.storage.GenerateURL(source.Avatar)
 		return nil

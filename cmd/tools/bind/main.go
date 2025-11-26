@@ -52,6 +52,7 @@ func createFilesConf(dir, pkg string, bindMode bool) *conf.FilesConf {
 				entpb.Admin{},
 				[]any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
 				checkOptions(bindMode, conf.WithIgnoreFields(admin.FieldCreatedAt, admin.FieldUpdatedAt)),
+				checkOptions(!bindMode, conf.WithIgnoreFields(admin.FieldPassword)),
 			),
 			conf.NewEntity(
 				ent.AdminSession{},
