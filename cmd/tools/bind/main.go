@@ -21,15 +21,27 @@ func main() {
 	bindDir := "./internal/pkg/render/entbind"
 	mapperDir := "./internal/pkg/render/entmap"
 
-	if err := gen.MapperFiles(createFilesConf(mapperDir, "entmap")); err != nil {
+	if err := gen.MapperFiles(createFilesConf(mapperDir, "entmap", false)); err != nil {
 		log.Fatal(err)
 	}
-	if err := gen.BindFiles(createFilesConf(bindDir, "entbind")); err != nil {
+	if err := gen.BindFiles(createFilesConf(bindDir, "entbind", true)); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func createFilesConf(dir, pkg string) *conf.FilesConf {
+func checkOptions(check bool, opts ...conf.EntityConfOption) conf.EntityConfOption {
+	if check {
+		return func(entityConf *conf.EntityConf) {
+			for _, opt := range opts {
+				opt(entityConf)
+			}
+		}
+	} else {
+		return func(entityConf *conf.EntityConf) {}
+	}
+}
+
+func createFilesConf(dir, pkg string, bindMode bool) *conf.FilesConf {
 	return &conf.FilesConf{
 		Dir:                  dir,
 		Package:              pkg,
@@ -39,25 +51,25 @@ func createFilesConf(dir, pkg string) *conf.FilesConf {
 				ent.Admin{},
 				entpb.Admin{},
 				[]any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
-				conf.WithIgnoreFields(admin.FieldCreatedAt, admin.FieldUpdatedAt),
+				checkOptions(bindMode, conf.WithIgnoreFields(admin.FieldCreatedAt, admin.FieldUpdatedAt)),
 			),
 			conf.NewEntity(
 				ent.AdminSession{},
 				entpb.AdminSession{},
 				[]any{ent.AdminSessionCreate{}, ent.AdminSessionUpdateOne{}},
-				conf.WithIgnoreFields(adminsession.FieldCreatedAt, adminsession.FieldUpdatedAt),
+				checkOptions(bindMode, conf.WithIgnoreFields(adminsession.FieldCreatedAt, adminsession.FieldUpdatedAt)),
 			),
 			conf.NewEntity(
 				ent.KeyValueStore{},
 				entpb.KeyValueStore{},
 				[]any{ent.KeyValueStoreCreate{}, ent.KeyValueStoreUpdateOne{}, ent.KeyValueStoreUpsertOne{}},
-				conf.WithIgnoreFields(keyvaluestore.FieldCreatedAt, keyvaluestore.FieldUpdatedAt),
+				checkOptions(bindMode, conf.WithIgnoreFields(keyvaluestore.FieldCreatedAt, keyvaluestore.FieldUpdatedAt)),
 			),
 			conf.NewEntity(
 				ent.User{},
 				sharedv1.User{},
 				[]any{ent.UserCreate{}, ent.UserUpdateOne{}},
-				conf.WithIgnoreFields(user.FieldCreatedAt, user.FieldUpdatedAt),
+				checkOptions(bindMode, conf.WithIgnoreFields(user.FieldCreatedAt, user.FieldUpdatedAt)),
 			),
 		},
 		ExtraImports: nil,
