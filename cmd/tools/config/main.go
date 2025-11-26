@@ -84,7 +84,7 @@ func init() {
 				conf.Database.Type = "sqlite3"
 				conf.Database.Path = "file:./var/data.db?cache=shared&mode=rwc"
 			}
-			raw, err := json.Marshal(conf)
+			raw, err := json.MarshalIndent(conf, "", "  ")
 			if err != nil {
 				return err
 			}
