@@ -30,8 +30,8 @@ func (s *Service) ListAdminSessions(ctx context.Context, request *dashv1.ListAdm
 	if err != nil {
 		return nil, err
 	}
-	page, size := conv.Page(count, int(request.PageSize))
-	all, err := query.Clone().Limit(size).Order(adminsession.ByID(sql.OrderDesc())).Offset(size * int(request.Page)).All(ctx)
+	totalPage, pageSize := conv.Page(count, int(request.PageSize))
+	all, err := query.Clone().Limit(pageSize).Order(adminsession.ByID(sql.OrderDesc())).Offset(pageSize * int(request.Page)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +48,6 @@ func (s *Service) ListAdminSessions(ctx context.Context, request *dashv1.ListAdm
 	return &dashv1.ListAdminSessionsResponse{
 		AdminSessions: conv.Map(all, s.render.AdminSession),
 		TotalSize:     int64(count),
-		TotalPage:     int64(page),
+		TotalPage:     int64(totalPage),
 	}, nil
 }
