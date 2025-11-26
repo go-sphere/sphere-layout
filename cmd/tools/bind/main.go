@@ -37,6 +37,9 @@ func createMappersFile(outDir string) error {
 			{
 				Source: ent.Admin{},
 				Target: entpb.Admin{},
+				IgnoreFields: []string{
+					admin.FieldPassword,
+				},
 			},
 			{
 				Source: ent.AdminSession{},

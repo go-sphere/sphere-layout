@@ -21,7 +21,7 @@ func (s *Service) GetCurrentUser(ctx context.Context, request *apiv1.GetCurrentU
 		return nil, err
 	}
 	return &apiv1.GetCurrentUserResponse{
-		User: s.render.UserFull(me),
+		User: s.render.User(me),
 	}, nil
 }
 

@@ -18,6 +18,9 @@ func (r *Render) AdminLite(value *ent.Admin) *entpb.Admin {
 }
 
 func (r *Render) Admin(value *ent.Admin) *entpb.Admin {
+	if value == nil {
+		return nil
+	}
 	return &entpb.Admin{
 		Id:        value.ID,
 		Username:  value.Username,
@@ -29,7 +32,7 @@ func (r *Render) Admin(value *ent.Admin) *entpb.Admin {
 	}
 }
 
-func (r *Render) User(value *ent.User) *sharedv1.User {
+func (r *Render) UserLite(value *ent.User) *sharedv1.User {
 	if value == nil {
 		return nil
 	}
@@ -40,7 +43,7 @@ func (r *Render) User(value *ent.User) *sharedv1.User {
 	}
 }
 
-func (r *Render) UserFull(value *ent.User) *sharedv1.User {
+func (r *Render) User(value *ent.User) *sharedv1.User {
 	if value == nil {
 		return nil
 	}

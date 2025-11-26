@@ -40,6 +40,6 @@ func (s *Service) AuthWithWxMini(ctx context.Context, request *apiv1.AuthWithWxM
 	return &apiv1.AuthWithWxMiniResponse{
 		IsNew: res.IsNew,
 		Token: token,
-		User:  s.render.UserFull(res.User),
+		User:  s.render.User(res.User),
 	}, nil
 }
