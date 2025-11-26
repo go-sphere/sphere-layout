@@ -6,8 +6,8 @@ package main
 import (
 	"log"
 
-	"github.com/go-sphere/entc-extensions/autoproto/gen"
-	"github.com/go-sphere/entc-extensions/autoproto/gen/conf"
+	"github.com/go-sphere/entc-extensions/entgen"
+	"github.com/go-sphere/entc-extensions/entgen/conf"
 	"github.com/go-sphere/sphere-layout/api/entpb"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
@@ -21,10 +21,10 @@ func main() {
 	bindDir := "./internal/pkg/render/entbind"
 	mapperDir := "./internal/pkg/render/entmap"
 
-	if err := gen.MapperFiles(createFilesConf(mapperDir, "entmap", false)); err != nil {
+	if err := entgen.MapperFiles(createFilesConf(mapperDir, "entmap", false)); err != nil {
 		log.Fatal(err)
 	}
-	if err := gen.BindFiles(createFilesConf(bindDir, "entbind", true)); err != nil {
+	if err := entgen.BindFiles(createFilesConf(bindDir, "entbind", true)); err != nil {
 		log.Fatal(err)
 	}
 }
