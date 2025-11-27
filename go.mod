@@ -11,7 +11,7 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-sphere/binding v0.0.2
 	github.com/go-sphere/confstore v0.0.4
-	github.com/go-sphere/entc-extensions v0.0.4-beta.1
+	github.com/go-sphere/entc-extensions v0.0.4-beta.3
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.2-beta.1
@@ -89,7 +89,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
-	github.com/quic-go/quic-go v0.57.0 // indirect
+	github.com/quic-go/quic-go v0.57.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stoewer/go-strcase v1.3.1 // indirect

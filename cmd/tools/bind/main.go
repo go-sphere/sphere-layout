@@ -4,6 +4,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/go-sphere/entc-extensions/entgen"
@@ -18,61 +19,45 @@ import (
 )
 
 func main() {
-	bindDir := "./internal/pkg/render/entbind"
-	mapperDir := "./internal/pkg/render/entmap"
+	bindDir := flag.String("bind", "./internal/pkg/render/entbind", "bind directory")
+	bindPkg := flag.String("bindpkg", "entbind", "bind package name")
+	mapperDir := flag.String("mapper", "./internal/pkg/render/entmap", "mapper directory")
+	mapperPkg := flag.String("mapperpkg", "entmap", "mapper package name")
 
-	if err := entgen.MapperFiles(createFilesConf(mapperDir, "entmap", false)); err != nil {
+	if err := entgen.MapperFiles(createFilesConf(*mapperDir, *mapperPkg, false)); err != nil {
 		log.Fatal(err)
 	}
-	if err := entgen.BindFiles(createFilesConf(bindDir, "entbind", true)); err != nil {
+	if err := entgen.BindFiles(createFilesConf(*bindDir, *bindPkg, true)); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func checkOptions(check bool, opts ...conf.EntityConfOption) conf.EntityConfOption {
-	if check {
-		return func(entityConf *conf.EntityConf) {
-			for _, opt := range opts {
-				opt(entityConf)
-			}
-		}
-	} else {
-		return func(entityConf *conf.EntityConf) {}
 	}
 }
 
 func createFilesConf(dir, pkg string, bindMode bool) *conf.FilesConf {
-	return &conf.FilesConf{
-		Dir:                  dir,
-		Package:              pkg,
-		RemoveBeforeGenerate: false,
-		Entities: []*conf.EntityConf{
-			conf.NewEntity(
-				ent.Admin{},
-				entpb.Admin{},
-				[]any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
-				checkOptions(bindMode, conf.WithIgnoreFields(admin.FieldCreatedAt, admin.FieldUpdatedAt)),
-				checkOptions(!bindMode, conf.WithIgnoreFields(admin.FieldPassword)),
-			),
-			conf.NewEntity(
-				ent.AdminSession{},
-				entpb.AdminSession{},
-				[]any{ent.AdminSessionCreate{}, ent.AdminSessionUpdateOne{}},
-				checkOptions(bindMode, conf.WithIgnoreFields(adminsession.FieldCreatedAt, adminsession.FieldUpdatedAt)),
-			),
-			conf.NewEntity(
-				ent.KeyValueStore{},
-				entpb.KeyValueStore{},
-				[]any{ent.KeyValueStoreCreate{}, ent.KeyValueStoreUpdateOne{}, ent.KeyValueStoreUpsertOne{}},
-				checkOptions(bindMode, conf.WithIgnoreFields(keyvaluestore.FieldCreatedAt, keyvaluestore.FieldUpdatedAt)),
-			),
-			conf.NewEntity(
-				ent.User{},
-				sharedv1.User{},
-				[]any{ent.UserCreate{}, ent.UserUpdateOne{}},
-				checkOptions(bindMode, conf.WithIgnoreFields(user.FieldCreatedAt, user.FieldUpdatedAt)),
-			),
-		},
-		ExtraImports: nil,
-	}
+	return conf.NewFilesConf(dir, pkg,
+		conf.NewEntity(
+			ent.Admin{},
+			entpb.Admin{},
+			[]any{ent.AdminCreate{}, ent.AdminUpdateOne{}},
+			conf.CheckOptions(bindMode, conf.WithIgnoreFields(admin.FieldCreatedAt, admin.FieldUpdatedAt)),
+			conf.CheckOptions(!bindMode, conf.WithIgnoreFields(admin.FieldPassword)),
+		),
+		conf.NewEntity(
+			ent.AdminSession{},
+			entpb.AdminSession{},
+			[]any{ent.AdminSessionCreate{}, ent.AdminSessionUpdateOne{}},
+			conf.CheckOptions(bindMode, conf.WithIgnoreFields(adminsession.FieldCreatedAt, adminsession.FieldUpdatedAt)),
+		),
+		conf.NewEntity(
+			ent.KeyValueStore{},
+			entpb.KeyValueStore{},
+			[]any{ent.KeyValueStoreCreate{}, ent.KeyValueStoreUpdateOne{}, ent.KeyValueStoreUpsertOne{}},
+			conf.CheckOptions(bindMode, conf.WithIgnoreFields(keyvaluestore.FieldCreatedAt, keyvaluestore.FieldUpdatedAt)),
+		),
+		conf.NewEntity(
+			ent.User{},
+			sharedv1.User{},
+			[]any{ent.UserCreate{}, ent.UserUpdateOne{}},
+			conf.CheckOptions(bindMode, conf.WithIgnoreFields(user.FieldCreatedAt, user.FieldUpdatedAt)),
+		),
+	).WithRemoveBeforeGenerate(false).WithExtraImports()
 }

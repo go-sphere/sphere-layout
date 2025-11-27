@@ -108,8 +108,8 @@ github.com/go-sphere/binding v0.0.2 h1:q2/u4KO+7s4KH/ZqTDBnwqxCM3Qa51RsiJkof7jfK
 github.com/go-sphere/binding v0.0.2/go.mod h1:0mukFqHNQULXOcTDSMsB3S+hfS/de+ooWUOQSQU1yrQ=
 github.com/go-sphere/confstore v0.0.4 h1:LJoui4Q1qryvW/rqKHAdEc0j2eLWH2Eb76LvY0vqcrk=
 github.com/go-sphere/confstore v0.0.4/go.mod h1:rvp2oSOW4x3E8JU0efD9JtHpBM2M3VIqM4rohoSMr34=
-github.com/go-sphere/entc-extensions v0.0.4-beta.1 h1:uXgNtJRYtB0I+eVJT2rv7TALSPycgsJ0/8DkY9Xa3a4=
-github.com/go-sphere/entc-extensions v0.0.4-beta.1/go.mod h1:nHzI7sXaEzOiPbbJS7y3no+7FtKcxGLRalsolylVHRo=
+github.com/go-sphere/entc-extensions v0.0.4-beta.3 h1:lviwQseKrLnzo2Fi7MatD00TLDwNSfNjnYJXGJEsbbA=
+github.com/go-sphere/entc-extensions v0.0.4-beta.3/go.mod h1:kUJUQ3sl1mOrSA5lQY0AqThH9tbjFHXEBpghuClYuII=
 github.com/go-sphere/errors v0.0.1 h1:kdTFOB1L8yyNHaYgpYZPSHu/xeMsEkujmCpkzK+v3hQ=
 github.com/go-sphere/errors v0.0.1/go.mod h1:xShlZuLMCNDjkn8IHMcKVeImtjw1ax8dZuhpcrwqhho=
 github.com/go-sphere/jsoncompressor v0.0.3 h1:Jpdw5vWK5ZDtyd5KQbxvZqOOipgiGW++HCRunIP6vKo=
@@ -183,8 +183,8 @@ github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRI
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/quic-go/qpack v0.6.0 h1:g7W+BMYynC1LbYLSqRt8PBg5Tgwxn214ZZR34VIOjz8=
 github.com/quic-go/qpack v0.6.0/go.mod h1:lUpLKChi8njB4ty2bFLX2x4gzDqXwUpaO1DP9qMDZII=
-github.com/quic-go/quic-go v0.57.0 h1:AsSSrrMs4qI/hLrKlTH/TGQeTMY0ib1pAOX7vA3AdqE=
-github.com/quic-go/quic-go v0.57.0/go.mod h1:ly4QBAjHA2VhdnxhojRsCUOeJwKYg+taDlos92xb1+s=
+github.com/quic-go/quic-go v0.57.1 h1:25KAAR9QR8KZrCZRThWMKVAwGoiHIrNbT72ULHTuI10=
+github.com/quic-go/quic-go v0.57.1/go.mod h1:ly4QBAjHA2VhdnxhojRsCUOeJwKYg+taDlos92xb1+s=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
 github.com/rodaine/protogofakeit v0.1.1 h1:ZKouljuRM3A+TArppfBqnH8tGZHOwM/pjvtXe9DaXH8=
