@@ -6,7 +6,7 @@ import (
 	"entgo.io/ent/dialect"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/migrate"
-	"github.com/go-sphere/sphere/database/sqlite"
+	"github.com/go-sphere/sphere/infra/sqlite"
 	_ "github.com/go-sql-driver/mysql"
 )
 

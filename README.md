@@ -2,7 +2,7 @@
 
 ## About
 
-`sphere` is a backend scaffolding designed for rapid development. It leverages `ent` for database schema definition and `gRPC/Protobuf` for API interface contracts. The framework includes a suite of tools for generating code and documentation, such as `Protobuf` files, `Swagger`/`OpenAPI` specifications, and `TypeScript` client libraries.
+`sphere-layout` is a backend scaffolding designed for rapid development. It leverages `ent` for database schema definition and `gRPC/Protobuf` for API interface contracts. The framework includes a suite of tools for generating code and documentation, such as `Protobuf` files, `Swagger`/`OpenAPI` specifications, and `TypeScript` client libraries.
 
 
 ## Development Commands

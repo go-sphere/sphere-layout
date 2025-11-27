@@ -14,7 +14,7 @@ require (
 	github.com/go-sphere/entc-extensions v0.0.4-beta.3
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.2-beta.1
+	github.com/go-sphere/sphere v0.0.2-beta.2
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/google/uuid v1.6.0

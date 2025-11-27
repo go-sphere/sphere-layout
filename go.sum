@@ -116,8 +116,8 @@ github.com/go-sphere/jsoncompressor v0.0.3 h1:Jpdw5vWK5ZDtyd5KQbxvZqOOipgiGW++HC
 github.com/go-sphere/jsoncompressor v0.0.3/go.mod h1:VtfZrSqHNlVWsPO+7U/CGEf7JhfMdEqj/ntquQHNlT0=
 github.com/go-sphere/options v0.0.1 h1:UmctzcFlkkbpl/AX8zJchZBeCPW01JfbGpkWS+XirGo=
 github.com/go-sphere/options v0.0.1/go.mod h1:5UC9Sr5iQFuXZF+AbRi1I64St9K5hgQGefriZdoNf4U=
-github.com/go-sphere/sphere v0.0.2-beta.1 h1:oOiQMOcPMI3ZtWXUbCOkmenV0bKQjRd5RsRJi8sf+G4=
-github.com/go-sphere/sphere v0.0.2-beta.1/go.mod h1:zDB0W6oLsILZC2Uw+lub87tSq8WCeCEmS/Gnd9uweRE=
+github.com/go-sphere/sphere v0.0.2-beta.2 h1:tT7kagEK+xV6h/cj8mX4/6Hzl7XDs+RQWtjtTBTTrg8=
+github.com/go-sphere/sphere v0.0.2-beta.2/go.mod h1:zDB0W6oLsILZC2Uw+lub87tSq8WCeCEmS/Gnd9uweRE=
 github.com/go-sql-driver/mysql v1.9.3 h1:U/N249h2WzJ3Ukj8SowVFjdtZKfu9vlLZxjPXV1aweo=
 github.com/go-sql-driver/mysql v1.9.3/go.mod h1:qn46aNg1333BRMNU69Lq93t8du/dwxI64Gl8i5p1WMU=
 github.com/go-telegram/bot v1.17.0 h1:Hs0kGxSj97QFqOQP0zxduY/4tSx8QDzvNI9uVRS+zmY=
