@@ -1,9 +1,9 @@
 package docs
 
 import (
+	"github.com/go-sphere/sphere-layout/internal/service/docs"
 	"github.com/go-sphere/sphere-layout/swagger/api"
 	"github.com/go-sphere/sphere-layout/swagger/dash"
-	"github.com/go-sphere/sphere/server/service/docs"
 )
 
 type Targets struct {

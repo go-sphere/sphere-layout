@@ -2,21 +2,22 @@ package dash
 
 import (
 	"encoding/json"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/sphere/server/auth/authorizer"
 	"github.com/go-sphere/sphere/server/auth/jwtauth"
-	"github.com/go-sphere/sphere/server/ginx"
+	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/go-sphere/sphere/server/middleware/auth"
 )
 
-func RegisterPureRute(route gin.IRouter) {
-	route.GET("/api/get-async-routes", ginx.WithJson(func(ctx *gin.Context) ([]struct{}, error) {
+func RegisterPureRute(route httpx.Router) {
+	route.Handle(http.MethodGet, "/api/get-async-routes", httpz.WithJson(func(ctx httpx.Context) ([]struct{}, error) {
 		return []struct{}{}, nil
 	}))
 }
 
-func NewPureAdminCookieAuthMiddleware[T authorizer.UID](authParser authorizer.Parser[T, *jwtauth.RBACClaims[T]]) gin.HandlerFunc {
+func NewPureAdminCookieAuthMiddleware[T authorizer.UID](authParser authorizer.Parser[T, *jwtauth.RBACClaims[T]]) httpx.Middleware {
 	return auth.NewAuthMiddleware(
 		authParser,
 		auth.WithCookieLoader("authorized-token"),

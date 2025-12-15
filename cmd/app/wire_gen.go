@@ -15,6 +15,7 @@ import (
 	api2 "github.com/go-sphere/sphere-layout/internal/server/api"
 	bot2 "github.com/go-sphere/sphere-layout/internal/server/bot"
 	dash2 "github.com/go-sphere/sphere-layout/internal/server/dash"
+	file2 "github.com/go-sphere/sphere-layout/internal/server/file"
 	"github.com/go-sphere/sphere-layout/internal/service/api"
 	"github.com/go-sphere/sphere-layout/internal/service/bot"
 	"github.com/go-sphere/sphere-layout/internal/service/dash"
@@ -54,7 +55,7 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 		return nil, err
 	}
 	fileConfig := conf.File
-	fileWeb := file.NewWebServer(fileConfig, s3Adapter)
+	fileWeb := file2.NewWebServer(fileConfig, s3Adapter)
 	dashInitialize := dashinit.NewDashInitialize(daoDao)
 	connectCleaner := conncleaner.NewConnectCleaner(daoDao, cache)
 	application := newApplication(web, apiWeb, botBot, fileWeb, dashInitialize, connectCleaner)

@@ -3,37 +3,40 @@ package dash
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-sphere/httpx"
+	"github.com/go-sphere/httpx/ginx"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
 	"github.com/go-sphere/sphere-layout/internal/service/dash"
 	"github.com/go-sphere/sphere-layout/internal/service/shared"
-	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/server/auth/acl"
 	"github.com/go-sphere/sphere/server/auth/jwtauth"
-	"github.com/go-sphere/sphere/server/ginx"
+	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/go-sphere/sphere/server/middleware/auth"
 	"github.com/go-sphere/sphere/server/middleware/cors"
-	"github.com/go-sphere/sphere/server/middleware/logger"
-	"github.com/go-sphere/sphere/server/middleware/ratelimiter"
-	"github.com/go-sphere/sphere/server/middleware/selector"
 	"github.com/go-sphere/sphere/storage"
 )
 
 type Web struct {
 	config    *Config
 	acl       *acl.ACL
-	server    *http.Server
+	engine    httpx.Engine
 	service   *dash.Service
 	sharedSvc *shared.Service
 }
 
 func NewWebServer(config *Config, storage storage.CDNStorage, service *dash.Service) *Web {
 	return &Web{
-		config:    config,
-		acl:       acl.NewACL(),
+		config: config,
+		acl:    acl.NewACL(),
+		engine: ginx.New(
+			ginx.WithOptions(httpx.WithEngine(gin.Default())),
+			ginx.WithServer(&http.Server{
+				Addr: config.HTTP.Address,
+			}),
+		),
 		service:   service,
 		sharedSvc: shared.NewService(storage, "dash"),
 	}
@@ -47,33 +50,31 @@ func (w *Web) Start(ctx context.Context) error {
 	jwtAuthorizer := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.AuthJWT)
 	jwtRefresher := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.RefreshJWT)
 
-	zapLogger := log.With(log.WithAttrs(map[string]any{"module": "dash"}), log.DisableCaller())
-	loggerMiddleware := logger.NewLoggerMiddleware(zapLogger)
-	recoveryMiddleware := logger.NewRecoveryMiddleware(zapLogger)
+	//zapLogger := log.With(log.WithAttrs(map[string]any{"module": "dash"}), log.DisableCaller())
+	//loggerMiddleware := logger.NewLoggerMiddleware(zapLogger)
+	//recoveryMiddleware := logger.NewRecoveryMiddleware(zapLogger)
 	authMiddleware := auth.NewAuthMiddleware[int64, *jwtauth.RBACClaims[int64]](
 		jwtAuthorizer,
 		auth.WithHeaderLoader(auth.AuthorizationHeader),
 		auth.WithPrefixTransform(auth.AuthorizationPrefixBearer),
-		auth.WithAbortWithError(ginx.AbortWithJsonError),
+		auth.WithAbortWithError(httpz.AbortWithJsonError),
 		auth.WithAbortOnError(true),
 	)
-	rateLimiter := ratelimiter.NewNewRateLimiterByClientIP(time.Second, 5, time.Hour)
 
-	engine := gin.New()
-	engine.Use(loggerMiddleware, recoveryMiddleware)
+	//engine.Use(loggerMiddleware, recoveryMiddleware)
 
 	// dashboard 静态资源
 	// 1. 不设置 `embed_dash` 编译选项，使用默认的静态资源, 在配置中设置静态资源的绝对路径
 	// 2. 设置 `embed_dash` 编译选项，使用内置的静态资源, 静态资源位置在 `assets/dash/dashboard` 目录下
 	// 3. 由使用其他服务反代，设置API允许其跨域访问, 其中w.config.DashCors是一个配置项，用于配置允许跨域访问的域名,例如：https://dash.example.com
-	w.RegisterDashStatic(engine.Group("/dash"))
+	w.RegisterDashStatic(w.engine.Group("/dash"))
 
-	api := engine.Group("/")
+	api := w.engine.Group("/")
 	needAuthRoute := api.Group("/", authMiddleware)
 	w.service.Init(jwtAuthorizer, jwtRefresher)
 
 	if len(w.config.HTTP.Cors) > 0 {
-		cors.Setup(engine, w.config.HTTP.Cors)
+		w.engine.Use(cors.NewCORS(cors.WithAllowOrigins(w.config.HTTP.Cors...)))
 	}
 	initDefaultRolesACL(w.acl)
 
@@ -82,18 +83,19 @@ func (w *Web) Start(ctx context.Context) error {
 
 	authRoute := api.Group("/", NewSessionMetaData())
 	// 根据元数据限定中间件作用范围
-	authRoute.Use(
-		selector.NewSelectorMiddleware(
-			selector.MatchFunc(
-				ginx.MatchOperation(
-					authRoute.BasePath(),
-					dashv1.EndpointsAuthService[:],
-					dashv1.OperationAuthServiceLoginWithPassword,
-				),
-			),
-			rateLimiter,
-		)...,
-	)
+	//rateLimiter := ratelimiter.NewNewRateLimiterByClientIP(time.Second, 5, time.Hour)
+	//authRoute.Use(
+	//	selector.NewSelectorMiddleware(
+	//		selector.MatchFunc(
+	//			httpx.MatchOperation(
+	//				authRoute.BasePath(),
+	//				dashv1.EndpointsAuthService[:],
+	//				dashv1.OperationAuthServiceLoginWithPassword,
+	//			),
+	//		),
+	//		rateLimiter,
+	//	)...,
+	//)
 	RegisterPureRute(authRoute)
 	dashv1.RegisterAuthServiceHTTPServer(authRoute, w.service)
 
@@ -104,18 +106,14 @@ func (w *Web) Start(ctx context.Context) error {
 	dashv1.RegisterSystemServiceHTTPServer(systemRoute, w.service)
 	dashv1.RegisterKeyValueStoreServiceHTTPServer(systemRoute, w.service)
 
-	w.server = &http.Server{
-		Addr:    w.config.HTTP.Address,
-		Handler: engine.Handler(),
-	}
-	return ginx.Start(w.server)
+	return w.engine.Start()
 }
 
 func (w *Web) Stop(ctx context.Context) error {
-	return ginx.Close(ctx, w.server)
+	return w.engine.Stop(ctx)
 }
 
-func (w *Web) withPermission(resource string) gin.HandlerFunc {
+func (w *Web) withPermission(resource string) httpx.Middleware {
 	return auth.NewPermissionMiddleware(resource, w.acl)
 }
 

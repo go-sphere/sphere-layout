@@ -7,11 +7,11 @@ import (
 	"buf.build/go/protovalidate"
 	"github.com/go-sphere/sphere-layout/internal/pkg/conv"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
-	"github.com/go-sphere/sphere/server/ginx"
+	"github.com/go-sphere/sphere/server/httpz"
 )
 
 func init() {
-	ginx.SetDefaultErrorParser(func(err error) (int32, int32, string) {
+	httpz.SetDefaultErrorParser(func(err error) (int32, int32, string) {
 		var ve *protovalidate.ValidationError
 		if errors.As(err, &ve) {
 			return ValidationError(ve)
@@ -24,7 +24,7 @@ func init() {
 		if errors.As(err, &ce) {
 			return EntConstraintError(ce)
 		}
-		return ginx.ParseError(err)
+		return httpz.ParseError(err)
 	})
 }
 

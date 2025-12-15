@@ -11,8 +11,8 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/server/bot"
 	"github.com/go-sphere/sphere-layout/internal/server/dash"
 	"github.com/go-sphere/sphere-layout/internal/server/docs"
+	fileserver "github.com/go-sphere/sphere-layout/internal/server/file"
 	"github.com/go-sphere/sphere/log"
-	fileserver "github.com/go-sphere/sphere/server/service/file"
 	"github.com/go-sphere/sphere/social/wechat"
 	"github.com/go-sphere/sphere/storage/local"
 	"github.com/go-sphere/sphere/utils/secure"
@@ -61,11 +61,9 @@ func NewEmptyConfig() *Config {
 			},
 		},
 		File: &fileserver.Config{
-			HTTP: fileserver.HTTPConfig{
-				Address: "0.0.0.0:9900",
-				Cors: []string{
-					"http://localhost:*",
-				},
+			Address: "0.0.0.0:9900",
+			Cors: []string{
+				"http://localhost:*",
 			},
 		},
 		Docs: &docs.Config{
