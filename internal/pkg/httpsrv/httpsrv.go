@@ -4,6 +4,7 @@ import (
 	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/httpx/fiberx"
 	"github.com/go-sphere/sphere/log"
+	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/gofiber/contrib/v3/zap"
 	"github.com/gofiber/fiber/v3"
 )
@@ -15,6 +16,16 @@ func NewHttpServer(name, addr string) httpx.Engine {
 	app := fiberx.New(
 		fiberx.WithEngine(engine),
 		fiberx.WithListen(addr),
+		fiberx.WithErrorHandler(func(ctx httpx.Context, err error) {
+			code, status, message := httpz.ParseError(err)
+			ctx.JSON(int(status), httpz.ErrorResponse{
+				Success: false,
+				Code:    int(code),
+				Error:   err.Error(),
+				Message: message,
+			})
+			ctx.Abort()
+		}),
 	)
 	if zapLogger, err := log.UnwrapZapLogger(logger); err == nil {
 		engine.Use(zap.New(zap.Config{
