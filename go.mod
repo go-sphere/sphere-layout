@@ -11,10 +11,10 @@ require (
 	github.com/go-sphere/confstore v0.0.4
 	github.com/go-sphere/entc-extensions v0.0.4-beta.3
 	github.com/go-sphere/errors v0.0.1
-	github.com/go-sphere/httpx v0.0.2-beta.2
-	github.com/go-sphere/httpx/fiberx v0.0.2-beta.4
+	github.com/go-sphere/httpx v0.0.2-beta.9
+	github.com/go-sphere/httpx/fiberx v0.0.2-beta.12
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.3-beta.4
+	github.com/go-sphere/sphere v0.0.3-beta.7
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/gofiber/contrib/v3/zap v1.0.0-rc.1
@@ -76,7 +76,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stoewer/go-strcase v1.3.1 // indirect
-	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
+	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/http-swagger v1.3.4 // indirect
 	github.com/tinylib/msgp v1.6.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -103,5 +103,5 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.40.1 // indirect
-	resty.dev/v3 v3.0.0-beta.4 // indirect
+	resty.dev/v3 v3.0.0-beta.5 // indirect
 )

@@ -39,9 +39,6 @@ func (w *Web) Identifier() string {
 func (w *Web) Start(ctx context.Context) error {
 	jwtAuthorizer := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.JWT)
 
-	//zapLogger := log.With(log.WithAttrs(map[string]any{"module": "api"}), log.DisableCaller())
-	//loggerMiddleware := logger.NewLoggerMiddleware(zapLogger)
-	//recoveryMiddleware := logger.NewRecoveryMiddleware(zapLogger)
 	authMiddleware := auth.NewAuthMiddleware[int64, *jwtauth.RBACClaims[int64]](
 		jwtAuthorizer,
 		auth.WithHeaderLoader(auth.AuthorizationHeader),
@@ -49,8 +46,6 @@ func (w *Web) Start(ctx context.Context) error {
 		auth.WithAbortWithError(httpz.AbortWithJsonError),
 		auth.WithAbortOnError(false),
 	)
-
-	//engine.Use(loggerMiddleware, recoveryMiddleware)
 
 	if len(w.config.HTTP.Cors) > 0 {
 		w.engine.Use(cors.NewCORS(cors.WithAllowOrigins(w.config.HTTP.Cors...)))

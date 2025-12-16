@@ -54,8 +54,6 @@ func (w *Web) Start(ctx context.Context) error {
 		auth.WithAbortOnError(true),
 	)
 
-	//engine.Use(loggerMiddleware, recoveryMiddleware)
-
 	// dashboard 静态资源
 	// 1. 不设置 `embed_dash` 编译选项，使用默认的静态资源, 在配置中设置静态资源的绝对路径
 	// 2. 设置 `embed_dash` 编译选项，使用内置的静态资源, 静态资源位置在 `assets/dash/dashboard` 目录下

@@ -1,6 +1,8 @@
 package httpsrv
 
 import (
+	"errors"
+
 	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/httpx/fiberx"
 	"github.com/go-sphere/sphere/log"
@@ -17,13 +19,23 @@ func NewHttpServer(name, addr string) httpx.Engine {
 		fiberx.WithEngine(engine),
 		fiberx.WithListen(addr),
 		fiberx.WithErrorHandler(func(ctx httpx.Context, err error) {
-			code, status, message := httpz.ParseError(err)
-			ctx.JSON(int(status), httpz.ErrorResponse{
-				Success: false,
-				Code:    int(code),
-				Error:   err.Error(),
-				Message: message,
-			})
+			var fErr *fiber.Error
+			if errors.As(err, &fErr) {
+				ctx.JSON(fErr.Code, httpz.ErrorResponse{
+					Success: false,
+					Code:    0,
+					Error:   "",
+					Message: fErr.Message,
+				})
+			} else {
+				code, status, message := httpz.ParseError(err)
+				ctx.JSON(int(status), httpz.ErrorResponse{
+					Success: false,
+					Code:    int(code),
+					Error:   err.Error(),
+					Message: message,
+				})
+			}
 			ctx.Abort()
 		}),
 	)
