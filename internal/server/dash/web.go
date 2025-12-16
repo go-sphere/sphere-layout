@@ -2,13 +2,11 @@ package dash
 
 import (
 	"context"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-sphere/httpx"
-	"github.com/go-sphere/httpx/ginx"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
+	"github.com/go-sphere/sphere-layout/internal/pkg/httpsrv"
 	"github.com/go-sphere/sphere-layout/internal/service/dash"
 	"github.com/go-sphere/sphere-layout/internal/service/shared"
 	"github.com/go-sphere/sphere/server/auth/acl"
@@ -27,16 +25,11 @@ type Web struct {
 	sharedSvc *shared.Service
 }
 
-func NewWebServer(config *Config, storage storage.CDNStorage, service *dash.Service) *Web {
+func NewWebServer(conf *Config, storage storage.CDNStorage, service *dash.Service) *Web {
 	return &Web{
-		config: config,
-		acl:    acl.NewACL(),
-		engine: ginx.New(
-			ginx.WithOptions(httpx.WithEngine(gin.Default())),
-			ginx.WithServer(&http.Server{
-				Addr: config.HTTP.Address,
-			}),
-		),
+		config:    conf,
+		acl:       acl.NewACL(),
+		engine:    httpsrv.NewHttpServer(conf.HTTP.Address),
 		service:   service,
 		sharedSvc: shared.NewService(storage, "dash"),
 	}

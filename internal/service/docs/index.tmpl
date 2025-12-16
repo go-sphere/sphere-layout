@@ -30,12 +30,6 @@
         .api-card p {
             margin-bottom: 0.5em;
         }
-
-        .footer {
-            text-align: center;
-            padding: 2em 0;
-            color: #888;
-        }
     </style>
 </head>
 <body>
@@ -43,7 +37,6 @@
     <h1>API Documentation Index</h1>
 </div>
 <div class="content">
-    {{.}}
     {{range .}}
         <div class="api-card pure-u-1 pure-u-md-1-2">
             <h2><a href="/{{.Spec.InstanceName | lower}}/doc/swagger/index.html">{{.Spec.InstanceName}}</a></h2>

@@ -1,10 +1,6 @@
 package file
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/httpx/ginx"
 	"github.com/go-sphere/sphere/server/middleware/cors"
 	"github.com/go-sphere/sphere/server/service/file"
@@ -17,12 +13,7 @@ type Config struct {
 }
 
 func NewWebServer(conf *Config, storage *fileserver.S3Adapter) *file.Web {
-	engine := ginx.New(
-		ginx.WithOptions(httpx.WithEngine(gin.Default())),
-		ginx.WithServer(&http.Server{
-			Addr: conf.Address,
-		}),
-	)
+	engine := ginx.New(ginx.WithServerAddr(conf.Address))
 	if len(conf.Cors) > 0 {
 		engine.Use(cors.NewCORS(cors.WithAllowOrigins(conf.Cors...)))
 	}

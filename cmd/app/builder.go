@@ -21,7 +21,7 @@ func newApplication(
 	return boot.NewApplication(
 		dash,
 		api,
-		bot,
+		//bot,
 		file,
 		initialize,
 		cleaner,

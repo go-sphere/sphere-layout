@@ -8,12 +8,12 @@ require (
 	entgo.io/ent v0.14.5
 	github.com/alitto/pond/v2 v2.6.0
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-sphere/binding v0.0.3
+	github.com/go-sphere/binding v0.0.4
 	github.com/go-sphere/confstore v0.0.4
 	github.com/go-sphere/entc-extensions v0.0.4-beta.3
 	github.com/go-sphere/errors v0.0.1
-	github.com/go-sphere/httpx v0.0.2-beta.1
-	github.com/go-sphere/httpx/ginx v0.0.2-beta.1
+	github.com/go-sphere/httpx v0.0.2-beta.2
+	github.com/go-sphere/httpx/ginx v0.0.2-beta.4
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.3-beta.1
 	github.com/go-sql-driver/mysql v1.9.3
@@ -36,8 +36,6 @@ require (
 	entgo.io/contrib v0.7.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.2.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
@@ -56,7 +54,6 @@ require (
 	github.com/go-openapi/jsonpointer v0.22.4 // indirect
 	github.com/go-openapi/jsonreference v0.21.4 // indirect
 	github.com/go-openapi/spec v0.22.2 // indirect
-	github.com/go-openapi/swag v0.25.4 // indirect
 	github.com/go-openapi/swag/conv v0.25.4 // indirect
 	github.com/go-openapi/swag/jsonname v0.25.4 // indirect
 	github.com/go-openapi/swag/jsonutils v0.25.4 // indirect
@@ -78,11 +75,9 @@ require (
 	github.com/hashicorp/hcl/v2 v2.24.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jhump/protoreflect v1.17.0 // indirect
-	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/mailru/easyjson v0.9.1 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -113,7 +108,6 @@ require (
 	golang.org/x/tools v0.40.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251213004720-97cd9d5aeac2 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.67.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

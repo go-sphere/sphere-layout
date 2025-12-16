@@ -3,7 +3,6 @@
 package dash
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/sphere-layout/assets/dash"
 	"github.com/go-sphere/sphere/server/httpz"

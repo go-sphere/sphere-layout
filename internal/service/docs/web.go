@@ -15,7 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-sphere/httpx"
 	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger" // Modify it to the web framework you use
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/swag"
 )
 
@@ -104,7 +104,10 @@ func setup(spec *swag.Spec, router gin.IRouter, target string) error {
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
-	Setup(route.Group("/doc"), spec)
+	route.Group("/doc").GET("/swagger/*any", ginSwagger.WrapHandler(
+		swaggerFiles.NewHandler(),
+		ginSwagger.InstanceName(spec.InstanceName()),
+	))
 	route.Any("/api/*path", func(c *gin.Context) {
 		c.Request.URL.Path = c.Param("path")
 		proxy.ServeHTTP(c.Writer, c.Request)
@@ -127,12 +130,4 @@ func createIndex(targets []Target) ([]byte, error) {
 	var buf bytes.Buffer
 	_ = tmpl.Execute(&buf, targets)
 	return buf.Bytes(), nil
-}
-
-// Setup registers Swagger UI endpoints for a given Swagger specification.
-func Setup(route gin.IRoutes, doc *swag.Spec) {
-	route.GET("/swagger/*any", ginSwagger.WrapHandler(
-		swaggerFiles.NewHandler(),
-		ginSwagger.InstanceName(doc.InstanceName()),
-	))
 }

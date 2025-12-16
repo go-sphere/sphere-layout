@@ -2,13 +2,11 @@ package api
 
 import (
 	"context"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-sphere/httpx"
-	"github.com/go-sphere/httpx/ginx"
 	apiv1 "github.com/go-sphere/sphere-layout/api/api/v1"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
+	"github.com/go-sphere/sphere-layout/internal/pkg/httpsrv"
 	"github.com/go-sphere/sphere-layout/internal/service/api"
 	"github.com/go-sphere/sphere-layout/internal/service/shared"
 	"github.com/go-sphere/sphere/server/auth/jwtauth"
@@ -27,11 +25,8 @@ type Web struct {
 
 func NewWebServer(conf *Config, storage storage.CDNStorage, service *api.Service) *Web {
 	return &Web{
-		config: conf,
-		engine: ginx.New(
-			ginx.WithOptions(httpx.WithEngine(gin.Default())),
-			ginx.WithServer(&http.Server{Addr: conf.HTTP.Address}),
-		),
+		config:    conf,
+		engine:    httpsrv.NewHttpServer(conf.HTTP.Address),
 		service:   service,
 		sharedSvc: shared.NewService(storage, "user"),
 	}
