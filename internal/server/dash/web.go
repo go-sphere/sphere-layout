@@ -2,6 +2,7 @@ package dash
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-sphere/httpx"
 	dashv1 "github.com/go-sphere/sphere-layout/api/dash/v1"
@@ -14,6 +15,8 @@ import (
 	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/go-sphere/sphere/server/middleware/auth"
 	"github.com/go-sphere/sphere/server/middleware/cors"
+	"github.com/go-sphere/sphere/server/middleware/ratelimiter"
+	"github.com/go-sphere/sphere/server/middleware/selector"
 	"github.com/go-sphere/sphere/storage"
 )
 
@@ -29,7 +32,7 @@ func NewWebServer(conf *Config, storage storage.CDNStorage, service *dash.Servic
 	return &Web{
 		config:    conf,
 		acl:       acl.NewACL(),
-		engine:    httpsrv.NewHttpServer(conf.HTTP.Address),
+		engine:    httpsrv.NewHttpServer("dash", conf.HTTP.Address),
 		service:   service,
 		sharedSvc: shared.NewService(storage, "dash"),
 	}
@@ -43,9 +46,6 @@ func (w *Web) Start(ctx context.Context) error {
 	jwtAuthorizer := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.AuthJWT)
 	jwtRefresher := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.RefreshJWT)
 
-	//zapLogger := log.With(log.WithAttrs(map[string]any{"module": "dash"}), log.DisableCaller())
-	//loggerMiddleware := logger.NewLoggerMiddleware(zapLogger)
-	//recoveryMiddleware := logger.NewRecoveryMiddleware(zapLogger)
 	authMiddleware := auth.NewAuthMiddleware[int64, *jwtauth.RBACClaims[int64]](
 		jwtAuthorizer,
 		auth.WithHeaderLoader(auth.AuthorizationHeader),
@@ -76,24 +76,25 @@ func (w *Web) Start(ctx context.Context) error {
 
 	authRoute := api.Group("/", NewSessionMetaData())
 	// 根据元数据限定中间件作用范围
-	//rateLimiter := ratelimiter.NewNewRateLimiterByClientIP(time.Second, 5, time.Hour)
-	//authRoute.Use(
-	//	selector.NewSelectorMiddleware(
-	//		selector.MatchFunc(
-	//			httpx.MatchOperation(
-	//				authRoute.BasePath(),
-	//				dashv1.EndpointsAuthService[:],
-	//				dashv1.OperationAuthServiceLoginWithPassword,
-	//			),
-	//		),
-	//		rateLimiter,
-	//	)...,
-	//)
+	rateLimiter := ratelimiter.NewNewRateLimiterByClientIP(time.Second, 5, time.Hour)
+	authRoute.Use(
+		selector.NewSelectorMiddleware(
+			selector.MatchFunc(
+				httpz.MatchOperation(
+					authRoute.BasePath(),
+					dashv1.EndpointsAuthService[:],
+					dashv1.OperationAuthServiceLoginWithPassword,
+				),
+			),
+			rateLimiter,
+		),
+	)
 	RegisterPureRute(authRoute)
 	dashv1.RegisterAuthServiceHTTPServer(authRoute, w.service)
 
 	adminRoute := needAuthRoute.Group("/", w.withPermission(dash.PermissionAdmin))
 	dashv1.RegisterAdminServiceHTTPServer(adminRoute, w.service)
+	dashv1.RegisterAdminSessionServiceHTTPServer(adminRoute, w.service)
 
 	systemRoute := needAuthRoute.Group("/")
 	dashv1.RegisterSystemServiceHTTPServer(systemRoute, w.service)
