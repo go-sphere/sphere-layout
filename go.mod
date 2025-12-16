@@ -11,10 +11,10 @@ require (
 	github.com/go-sphere/confstore v0.0.4
 	github.com/go-sphere/entc-extensions v0.0.4-beta.3
 	github.com/go-sphere/errors v0.0.1
-	github.com/go-sphere/httpx v0.0.2-beta.9
-	github.com/go-sphere/httpx/fiberx v0.0.2-beta.12
+	github.com/go-sphere/httpx v0.0.2-beta.22
+	github.com/go-sphere/httpx/fiberx v0.0.2-beta.23
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.3-beta.7
+	github.com/go-sphere/sphere v0.0.3-beta.8
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/gofiber/contrib/v3/zap v1.0.0-rc.1

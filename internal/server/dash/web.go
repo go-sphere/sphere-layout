@@ -85,7 +85,7 @@ func (w *Web) Start(ctx context.Context) error {
 				),
 			),
 			rateLimiter,
-		),
+		)...,
 	)
 	RegisterPureRute(authRoute)
 	dashv1.RegisterAuthServiceHTTPServer(authRoute, w.service)
