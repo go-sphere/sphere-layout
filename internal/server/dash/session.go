@@ -6,9 +6,9 @@ import (
 )
 
 func NewSessionMetaData() httpx.Middleware {
-	return func(ctx httpx.Context) {
+	return func(ctx httpx.Context) error {
 		ctx.Set(dash.AuthContextKeyIP, ctx.ClientIP())
 		ctx.Set(dash.AuthContextKeyUA, ctx.Header("User-Agent"))
-		ctx.Next()
+		return ctx.Next()
 	}
 }

@@ -25,7 +25,7 @@ func NewHttpServer(name, addr string) httpx.Engine {
 					Message: fErr.Message,
 				})
 			}
-			code, status, message := httpz.ParseError(err)
+			code, status, message := httpx.ParseError(err)
 			return ctx.Status(int(status)).JSON(httpz.ErrorResponse{
 				Success: false,
 				Code:    int(code),

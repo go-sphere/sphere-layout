@@ -2,6 +2,8 @@ module github.com/go-sphere/sphere-layout
 
 go 1.25.5
 
+replace github.com/go-sphere/sphere => ../sphere
+
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20251209175733-2a1774d88802.1
 	buf.build/go/protovalidate v1.1.0
@@ -11,8 +13,8 @@ require (
 	github.com/go-sphere/confstore v0.0.4
 	github.com/go-sphere/entc-extensions v0.0.4-beta.3
 	github.com/go-sphere/errors v0.0.1
-	github.com/go-sphere/httpx v0.0.2-beta.22
-	github.com/go-sphere/httpx/fiberx v0.0.2-beta.23
+	github.com/go-sphere/httpx v0.0.2-beta.30
+	github.com/go-sphere/httpx/fiberx v0.0.2-beta.30
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.3-beta.8
 	github.com/go-sql-driver/mysql v1.9.3
@@ -23,7 +25,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/spf13/cobra v1.10.2
 	github.com/swaggo/swag v1.16.6
-	golang.org/x/exp v0.0.0-20251209150349-8475f28825e9
+	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
 	golang.org/x/sync v0.19.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20251213004720-97cd9d5aeac2
 	google.golang.org/protobuf v1.36.11
@@ -58,7 +60,7 @@ require (
 	github.com/go-sphere/jsoncompressor v0.0.3 // indirect
 	github.com/go-telegram/bot v1.17.0 // indirect
 	github.com/gofiber/schema v1.6.0 // indirect
-	github.com/gofiber/utils/v2 v2.0.0-rc.4 // indirect
+	github.com/gofiber/utils/v2 v2.0.0-rc.5 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/cel-go v0.26.1 // indirect
@@ -102,6 +104,6 @@ require (
 	modernc.org/libc v1.67.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.40.1 // indirect
+	modernc.org/sqlite v1.41.0 // indirect
 	resty.dev/v3 v3.0.0-beta.5 // indirect
 )

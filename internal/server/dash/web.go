@@ -50,7 +50,6 @@ func (w *Web) Start(ctx context.Context) error {
 		jwtAuthorizer,
 		auth.WithHeaderLoader(auth.AuthorizationHeader),
 		auth.WithPrefixTransform(auth.AuthorizationPrefixBearer),
-		auth.WithAbortWithError(httpz.AbortWithJsonError),
 		auth.WithAbortOnError(true),
 	)
 
