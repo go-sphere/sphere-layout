@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	botv1 "github.com/go-sphere/sphere-layout/api/bot/v1"
-	"github.com/go-sphere/sphere/social/telegram"
+	"github.com/go-sphere/telegram-bot/telegram"
 )
 
 var _ botv1.MenuServiceBotCodec = &MenuServiceBotCodec{}

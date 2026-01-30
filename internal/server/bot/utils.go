@@ -1,6 +1,6 @@
 package bot
 
-import "github.com/go-sphere/sphere/social/telegram"
+import "github.com/go-sphere/telegram-bot/telegram"
 
 func NewButton[T any](text, query string, data T) telegram.Button {
 	return telegram.NewButton(text, query, data)

@@ -5,7 +5,7 @@ import (
 
 	botv1 "github.com/go-sphere/sphere-layout/api/bot/v1"
 	service "github.com/go-sphere/sphere-layout/internal/service/bot"
-	"github.com/go-sphere/sphere/social/telegram"
+	"github.com/go-sphere/telegram-bot/telegram"
 )
 
 type Config = telegram.Config
