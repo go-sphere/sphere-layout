@@ -13,9 +13,9 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/server/docs"
 	fileserver "github.com/go-sphere/sphere-layout/internal/server/file"
 	"github.com/go-sphere/sphere/log"
-	"github.com/go-sphere/sphere/social/wechat"
 	"github.com/go-sphere/sphere/storage/local"
 	"github.com/go-sphere/sphere/utils/secure"
+	"github.com/go-sphere/weixin-mp-api/wechat"
 )
 
 var BuildVersion = "dev"

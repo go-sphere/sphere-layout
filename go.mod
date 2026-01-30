@@ -1,6 +1,6 @@
 module github.com/go-sphere/sphere-layout
 
-go 1.25.5
+go 1.25.6
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20251209175733-2a1774d88802.1
@@ -15,6 +15,8 @@ require (
 	github.com/go-sphere/httpx/fiberx v0.0.2-beta.30
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.3-beta.9
+	github.com/go-sphere/telegram-bot v0.0.1
+	github.com/go-sphere/weixin-mp-api v0.0.1
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/gofiber/contrib/v3/zap v1.0.0-rc.1

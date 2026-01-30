@@ -7,6 +7,7 @@
 package main
 
 import (
+	"github.com/go-sphere/sphere-layout/internal"
 	"github.com/go-sphere/sphere-layout/internal/biz/task/conncleaner"
 	"github.com/go-sphere/sphere-layout/internal/biz/task/dashinit"
 	"github.com/go-sphere/sphere-layout/internal/config"
@@ -22,7 +23,7 @@ import (
 	"github.com/go-sphere/sphere/cache/memory"
 	"github.com/go-sphere/sphere/core/boot"
 	"github.com/go-sphere/sphere/server/service/file"
-	"github.com/go-sphere/sphere/social/wechat"
+	"github.com/go-sphere/weixin-mp-api/wechat"
 )
 
 // Injectors from wire.go:
@@ -41,12 +42,13 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 	}
 	daoDao := dao.NewDao(entClient)
 	wechatConfig := conf.WxMini
-	wechatWechat := wechat.NewWechat(wechatConfig)
-	cache := memory.NewByteCache()
-	service := dash.NewService(daoDao, wechatWechat, cache, s3Adapter)
+	cache := internal.NewWechatCache()
+	wechatWechat := wechat.NewWechat(wechatConfig, cache)
+	memoryCache := memory.NewByteCache()
+	service := dash.NewService(daoDao, wechatWechat, memoryCache, s3Adapter)
 	web := dash2.NewWebServer(dashConfig, s3Adapter, service)
 	apiConfig := conf.API
-	apiService := api.NewService(daoDao, wechatWechat, cache, s3Adapter)
+	apiService := api.NewService(daoDao, wechatWechat, memoryCache, s3Adapter)
 	apiWeb := api2.NewWebServer(apiConfig, s3Adapter, apiService)
 	telegramConfig := conf.Bot
 	botService := bot.NewService()
@@ -57,7 +59,7 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 	fileConfig := conf.File
 	fileWeb := file2.NewWebServer(fileConfig, s3Adapter)
 	dashInitialize := dashinit.NewDashInitialize(daoDao)
-	connectCleaner := conncleaner.NewConnectCleaner(daoDao, cache)
+	connectCleaner := conncleaner.NewConnectCleaner(daoDao, memoryCache)
 	application := newApplication(web, apiWeb, botBot, fileWeb, dashInitialize, connectCleaner)
 	return application, nil
 }

@@ -7,16 +7,22 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/server"
 	"github.com/go-sphere/sphere-layout/internal/service"
 	"github.com/go-sphere/sphere/cache"
+	"github.com/go-sphere/sphere/cache/mcache"
 	"github.com/go-sphere/sphere/cache/memory"
 	"github.com/go-sphere/sphere/server/service/file"
-	"github.com/go-sphere/sphere/social/wechat"
 	"github.com/go-sphere/sphere/storage"
 	"github.com/go-sphere/sphere/storage/fileserver"
+	"github.com/go-sphere/weixin-mp-api/wechat"
 	"github.com/google/wire"
 )
 
+func NewWechatCache() wechat.Cache {
+	return mcache.NewCache[string]()
+}
+
 var cacheSet = wire.NewSet(
 	memory.NewByteCache,
+	NewWechatCache,
 	wire.Bind(new(cache.ByteCache), new(*memory.ByteCache)),
 )
 

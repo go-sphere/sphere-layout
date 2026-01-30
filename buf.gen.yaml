@@ -32,7 +32,7 @@ plugins:
     opt:
       - paths=source_relative
       - options_key=bot
-      - request_model=github.com/go-sphere/sphere/social/telegram;Update
-      - response_model=github.com/go-sphere/sphere/social/telegram;Message
-      - extra_data_model=github.com/go-sphere/sphere/social/telegram;MethodExtraData
-      - extra_data_constructor=github.com/go-sphere/sphere/social/telegram;NewMethodExtraData
+      - request_model=github.com/go-sphere/telegram-bot/telegram;Update
+      - response_model=github.com/go-sphere/telegram-bot/telegram;Message
+      - extra_data_model=github.com/go-sphere/telegram-bot/telegram;MethodExtraData
+      - extra_data_constructor=github.com/go-sphere/telegram-bot/telegram;NewMethodExtraData

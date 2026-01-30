@@ -8,8 +8,8 @@ import (
 	"github.com/go-sphere/sphere/cache/memory"
 	"github.com/go-sphere/sphere/server/auth/authorizer"
 	"github.com/go-sphere/sphere/server/auth/jwtauth"
-	"github.com/go-sphere/sphere/social/wechat"
 	"github.com/go-sphere/sphere/storage"
+	"github.com/go-sphere/weixin-mp-api/wechat"
 )
 
 const (

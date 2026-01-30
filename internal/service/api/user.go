@@ -6,7 +6,7 @@ import (
 	apiv1 "github.com/go-sphere/sphere-layout/api/api/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/auth"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/userplatform"
-	"github.com/go-sphere/sphere/social/wechat"
+	"github.com/go-sphere/weixin-mp-api/wechat"
 )
 
 var _ apiv1.UserServiceHTTPServer = (*Service)(nil)
