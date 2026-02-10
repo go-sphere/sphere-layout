@@ -6,6 +6,7 @@ import (
 	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/httpx/fiberx"
 	"github.com/go-sphere/sphere/log"
+	"github.com/go-sphere/sphere/log/zapx"
 	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/gofiber/contrib/v3/zap"
 	"github.com/gofiber/fiber/v3"
@@ -38,9 +39,9 @@ func NewHttpServer(name, addr string) httpx.Engine {
 		fiberx.WithEngine(engine),
 		fiberx.WithListen(addr),
 	)
-	if zapLogger, err := log.UnwrapZapLogger(logger); err == nil {
+	if zapBackend, ok := logger.Backend().(*zapx.Backend); ok {
 		engine.Use(zap.New(zap.Config{
-			Logger: zapLogger,
+			Logger: zapBackend.ZapLogger(),
 		}))
 	}
 	return app

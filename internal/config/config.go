@@ -12,7 +12,7 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/server/dash"
 	"github.com/go-sphere/sphere-layout/internal/server/docs"
 	fileserver "github.com/go-sphere/sphere-layout/internal/server/file"
-	"github.com/go-sphere/sphere/log"
+	"github.com/go-sphere/sphere/log/zapx"
 	"github.com/go-sphere/sphere/storage/local"
 	"github.com/go-sphere/sphere/utils/secure"
 	"github.com/go-sphere/weixin-mp-api/wechat"
@@ -22,7 +22,7 @@ var BuildVersion = "dev"
 
 type Config struct {
 	Environments map[string]string  `json:"environments" yaml:"environments"`
-	Log          *log.Config        `json:"log" yaml:"log"`
+	Log          *zapx.Config       `json:"log" yaml:"log"`
 	Database     *client.Config     `json:"database" yaml:"database"`
 	Dash         *dash.Config       `json:"dash" yaml:"dash"`
 	API          *api.Config        `json:"api" yaml:"api"`
@@ -36,14 +36,14 @@ type Config struct {
 func NewEmptyConfig() *Config {
 	return &Config{
 		Environments: map[string]string{},
-		Log: &log.Config{
-			File: &log.FileConfig{
+		Log: &zapx.Config{
+			File: &zapx.FileConfig{
 				FileName:   "./var/log/sphere.log",
 				MaxSize:    10,
 				MaxBackups: 10,
 				MaxAge:     10,
 			},
-			Console: &log.ConsoleConfig{},
+			Console: &zapx.ConsoleConfig{},
 			Level:   "info",
 		},
 		Database: &client.Config{},
@@ -102,7 +102,7 @@ func NewConfig(path string) (*Config, error) {
 		return nil, err
 	}
 	if config.Log == nil {
-		config.Log = log.NewDefaultConfig()
+		config.Log = zapx.NewDefaultConfig()
 	}
 	return config, nil
 }

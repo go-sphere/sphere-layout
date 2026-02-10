@@ -14,7 +14,7 @@ require (
 	github.com/go-sphere/httpx v0.0.2-beta.30
 	github.com/go-sphere/httpx/fiberx v0.0.2-beta.30
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.3-beta.9
+	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260210060703-9a3671c51485
 	github.com/go-sphere/telegram-bot v0.0.1
 	github.com/go-sphere/weixin-mp-api v0.0.1
 	github.com/go-sql-driver/mysql v1.9.3
@@ -61,7 +61,7 @@ require (
 	github.com/go-telegram/bot v1.18.0 // indirect
 	github.com/gofiber/schema v1.6.0 // indirect
 	github.com/gofiber/utils/v2 v2.0.0-rc.6 // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/cel-go v0.26.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
