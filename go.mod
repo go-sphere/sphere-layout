@@ -15,8 +15,8 @@ require (
 	github.com/go-sphere/httpx/fiberx v0.0.2-beta.30
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260211122517-a174b7e32306
-	github.com/go-sphere/telegram-bot v0.0.1
-	github.com/go-sphere/weixin-mp-api v0.0.1
+	github.com/go-sphere/telegram-bot v0.0.2-0.20260211125457-a86be7bf9d63
+	github.com/go-sphere/weixin-mp-api v0.0.2-0.20260211125647-7e03add0603f
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/gofiber/contrib/v3/zap v1.0.0-rc.1

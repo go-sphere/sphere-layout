@@ -12,7 +12,7 @@ type Config struct {
 	Cors    []string `json:"cors" yaml:"cors"`
 }
 
-func NewWebServer(conf *Config, storage *fileserver.FileServer) *file.Web {
+func NewWebServer(conf Config, storage *fileserver.FileServer) *file.Web {
 	engine := httpsrv.NewHttpServer("file", conf.Address)
 	if len(conf.Cors) > 0 {
 		engine.Use(cors.NewCORS(cors.WithAllowOrigins(conf.Cors...)))

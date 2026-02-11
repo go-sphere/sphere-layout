@@ -21,14 +21,14 @@ import (
 )
 
 type Web struct {
-	config    *Config
+	config    Config
 	acl       *acl.ACL
 	engine    httpx.Engine
 	service   *dash.Service
 	sharedSvc *shared.Service
 }
 
-func NewWebServer(conf *Config, storage storage.CDNStorage, service *dash.Service) *Web {
+func NewWebServer(conf Config, storage storage.CDNStorage, service *dash.Service) *Web {
 	return &Web{
 		config:    conf,
 		acl:       acl.NewACL(),

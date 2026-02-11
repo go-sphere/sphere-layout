@@ -16,13 +16,13 @@ import (
 )
 
 type Web struct {
-	config    *Config
+	config    Config
 	engine    httpx.Engine
 	service   *api.Service
 	sharedSvc *shared.Service
 }
 
-func NewWebServer(conf *Config, storage storage.CDNStorage, service *api.Service) *Web {
+func NewWebServer(conf Config, storage storage.CDNStorage, service *api.Service) *Web {
 	return &Web{
 		config:    conf,
 		engine:    httpsrv.NewHttpServer("api", conf.HTTP.Address),

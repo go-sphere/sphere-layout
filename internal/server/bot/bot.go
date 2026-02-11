@@ -15,7 +15,7 @@ type Bot struct {
 	service *service.Service
 }
 
-func NewApp(conf *Config, botService *service.Service) (*Bot, error) {
+func NewApp(conf Config, botService *service.Service) (*Bot, error) {
 	app, err := telegram.NewApp(conf)
 	if err != nil {
 		return nil, err

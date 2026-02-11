@@ -29,7 +29,7 @@ import (
 // Injectors from wire.go:
 
 func NewApplication(conf *config.Config) (*boot.Application, error) {
-	dashConfig := &conf.Dash
+	dashConfig := conf.Dash
 	localFileServiceConfig := conf.Local
 	fileServer, err := file.NewLocalFileService(localFileServiceConfig)
 	if err != nil {
@@ -41,22 +41,22 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 		return nil, err
 	}
 	daoDao := dao.NewDao(entClient)
-	wechatConfig := &conf.WxMini
+	wechatConfig := conf.WxMini
 	cache := internal.NewWechatCache()
 	wechatWechat := wechat.NewWechat(wechatConfig, cache)
 	memoryCache := memory.NewByteCache()
 	service := dash.NewService(daoDao, wechatWechat, memoryCache, fileServer)
 	web := dash2.NewWebServer(dashConfig, fileServer, service)
-	apiConfig := &conf.API
+	apiConfig := conf.API
 	apiService := api.NewService(daoDao, wechatWechat, memoryCache, fileServer)
 	apiWeb := api2.NewWebServer(apiConfig, fileServer, apiService)
-	telegramConfig := &conf.Bot
+	telegramConfig := conf.Bot
 	botService := bot.NewService()
 	botBot, err := bot2.NewApp(telegramConfig, botService)
 	if err != nil {
 		return nil, err
 	}
-	fileConfig := &conf.File
+	fileConfig := conf.File
 	fileWeb := file2.NewWebServer(fileConfig, fileServer)
 	dashInitialize := dashinit.NewDashInitialize(daoDao)
 	connectCleaner := conncleaner.NewConnectCleaner(daoDao, memoryCache)
