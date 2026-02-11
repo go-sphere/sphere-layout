@@ -17,7 +17,7 @@ const (
 	PermissionAdmin = "admin"
 )
 
-type TokenAuthorizer = authorizer.TokenAuthorizer[int64, *jwtauth.RBACClaims[int64]]
+type TokenAuthorizer = authorizer.TokenAuthorizer[int64, jwtauth.RBACClaims[int64]]
 
 type Service struct {
 	authorizer.ContextUtils[int64]

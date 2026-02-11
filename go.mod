@@ -14,7 +14,7 @@ require (
 	github.com/go-sphere/httpx v0.0.2-beta.30
 	github.com/go-sphere/httpx/fiberx v0.0.2-beta.30
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260210060703-9a3671c51485
+	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260211122517-a174b7e32306
 	github.com/go-sphere/telegram-bot v0.0.1
 	github.com/go-sphere/weixin-mp-api v0.0.1
 	github.com/go-sql-driver/mysql v1.9.3

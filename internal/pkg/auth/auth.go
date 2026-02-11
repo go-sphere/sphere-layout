@@ -21,7 +21,7 @@ const (
 	AppTokenValidDuration = time.Hour * 24 * 7
 )
 
-func RenderClaims(user *ent.User, pla *ent.UserPlatform, duration time.Duration) *jwtauth.RBACClaims[int64] {
+func RenderClaims(user *ent.User, pla *ent.UserPlatform, duration time.Duration) jwtauth.RBACClaims[int64] {
 	return jwtauth.NewRBACClaims(
 		user.ID,
 		pla.Platform+":"+pla.PlatformID,

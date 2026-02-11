@@ -46,7 +46,7 @@ func (w *Web) Start(ctx context.Context) error {
 	jwtAuthorizer := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.AuthJWT)
 	jwtRefresher := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.RefreshJWT)
 
-	authMiddleware := auth.NewAuthMiddleware[int64, *jwtauth.RBACClaims[int64]](
+	authMiddleware := auth.NewAuthMiddleware[int64, jwtauth.RBACClaims[int64]](
 		jwtAuthorizer,
 		auth.WithHeaderLoader(auth.AuthorizationHeader),
 		auth.WithPrefixTransform(auth.AuthorizationPrefixBearer),

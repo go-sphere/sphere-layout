@@ -29,35 +29,35 @@ import (
 // Injectors from wire.go:
 
 func NewApplication(conf *config.Config) (*boot.Application, error) {
-	dashConfig := conf.Dash
-	localConfig := conf.Storage
-	s3Adapter, err := file.NewLocalFileService(localConfig)
+	dashConfig := &conf.Dash
+	localFileServiceConfig := conf.Local
+	fileServer, err := file.NewLocalFileService(localFileServiceConfig)
 	if err != nil {
 		return nil, err
 	}
-	clientConfig := conf.Database
+	clientConfig := &conf.Database
 	entClient, err := client.NewDataBaseClient(clientConfig)
 	if err != nil {
 		return nil, err
 	}
 	daoDao := dao.NewDao(entClient)
-	wechatConfig := conf.WxMini
+	wechatConfig := &conf.WxMini
 	cache := internal.NewWechatCache()
 	wechatWechat := wechat.NewWechat(wechatConfig, cache)
 	memoryCache := memory.NewByteCache()
-	service := dash.NewService(daoDao, wechatWechat, memoryCache, s3Adapter)
-	web := dash2.NewWebServer(dashConfig, s3Adapter, service)
-	apiConfig := conf.API
-	apiService := api.NewService(daoDao, wechatWechat, memoryCache, s3Adapter)
-	apiWeb := api2.NewWebServer(apiConfig, s3Adapter, apiService)
-	telegramConfig := conf.Bot
+	service := dash.NewService(daoDao, wechatWechat, memoryCache, fileServer)
+	web := dash2.NewWebServer(dashConfig, fileServer, service)
+	apiConfig := &conf.API
+	apiService := api.NewService(daoDao, wechatWechat, memoryCache, fileServer)
+	apiWeb := api2.NewWebServer(apiConfig, fileServer, apiService)
+	telegramConfig := &conf.Bot
 	botService := bot.NewService()
 	botBot, err := bot2.NewApp(telegramConfig, botService)
 	if err != nil {
 		return nil, err
 	}
-	fileConfig := conf.File
-	fileWeb := file2.NewWebServer(fileConfig, s3Adapter)
+	fileConfig := &conf.File
+	fileWeb := file2.NewWebServer(fileConfig, fileServer)
 	dashInitialize := dashinit.NewDashInitialize(daoDao)
 	connectCleaner := conncleaner.NewConnectCleaner(daoDao, memoryCache)
 	application := newApplication(web, apiWeb, botBot, fileWeb, dashInitialize, connectCleaner)

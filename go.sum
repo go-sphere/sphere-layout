@@ -93,8 +93,8 @@ github.com/go-sphere/jsoncompressor v0.0.3 h1:Jpdw5vWK5ZDtyd5KQbxvZqOOipgiGW++HC
 github.com/go-sphere/jsoncompressor v0.0.3/go.mod h1:VtfZrSqHNlVWsPO+7U/CGEf7JhfMdEqj/ntquQHNlT0=
 github.com/go-sphere/options v0.0.1 h1:UmctzcFlkkbpl/AX8zJchZBeCPW01JfbGpkWS+XirGo=
 github.com/go-sphere/options v0.0.1/go.mod h1:5UC9Sr5iQFuXZF+AbRi1I64St9K5hgQGefriZdoNf4U=
-github.com/go-sphere/sphere v0.0.3-beta.9.0.20260210060703-9a3671c51485 h1:NPtMIJU7/swIaU1AQPwaC/Pn6C/Lc1WFig9MIq616mA=
-github.com/go-sphere/sphere v0.0.3-beta.9.0.20260210060703-9a3671c51485/go.mod h1:coDiNoEAHS8ydsUI5LEmPaSOxfjjNBxmiH9z/NwR2pY=
+github.com/go-sphere/sphere v0.0.3-beta.9.0.20260211122517-a174b7e32306 h1:dJQdw0KXCC30EL/YV3rk9di2TTzypJ4YvJxegw8bN7g=
+github.com/go-sphere/sphere v0.0.3-beta.9.0.20260211122517-a174b7e32306/go.mod h1:coDiNoEAHS8ydsUI5LEmPaSOxfjjNBxmiH9z/NwR2pY=
 github.com/go-sphere/telegram-bot v0.0.1 h1:S84xgFCXrEMCnrpiVGLeecanx3VcN5VO7KWQN7rkKnI=
 github.com/go-sphere/telegram-bot v0.0.1/go.mod h1://FJtWfJsbXS/knelR4H/DWJZ7qi0PBQhF/8oGkGyNA=
 github.com/go-sphere/weixin-mp-api v0.0.1 h1:kqSvhwB9xSiMWmb3PBvww+5O7t4hujCPIrIwDE3oxqk=

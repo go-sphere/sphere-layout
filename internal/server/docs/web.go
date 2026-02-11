@@ -19,7 +19,7 @@ type Config struct {
 type Web = docs.Web
 
 func NewWebServer(config *Config) *Web {
-	return docs.NewWebServer(&docs.Config{
+	return docs.NewWebServer(docs.Config{
 		Address: config.Address,
 		Targets: []docs.Target{
 			{Address: config.Targets.API, Spec: api.SwaggerInfoAPI},

@@ -11,9 +11,9 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/server/bot"
 	"github.com/go-sphere/sphere-layout/internal/server/dash"
 	"github.com/go-sphere/sphere-layout/internal/server/docs"
-	fileserver "github.com/go-sphere/sphere-layout/internal/server/file"
+	fileweb "github.com/go-sphere/sphere-layout/internal/server/file"
 	"github.com/go-sphere/sphere/log/zapx"
-	"github.com/go-sphere/sphere/storage/local"
+	spherefile "github.com/go-sphere/sphere/server/service/file"
 	"github.com/go-sphere/sphere/utils/secure"
 	"github.com/go-sphere/weixin-mp-api/wechat"
 )
@@ -21,68 +21,74 @@ import (
 var BuildVersion = "dev"
 
 type Config struct {
-	Environments map[string]string  `json:"environments" yaml:"environments"`
-	Log          *zapx.Config       `json:"log" yaml:"log"`
-	Database     *client.Config     `json:"database" yaml:"database"`
-	Dash         *dash.Config       `json:"dash" yaml:"dash"`
-	API          *api.Config        `json:"api" yaml:"api"`
-	File         *fileserver.Config `json:"file" yaml:"file"`
-	Docs         *docs.Config       `json:"docs" yaml:"docs"`
-	Storage      *local.Config      `json:"storage" yaml:"storage"`
-	Bot          *bot.Config        `json:"bot" yaml:"bot"`
-	WxMini       *wechat.Config     `json:"wx_mini" yaml:"wx_mini"`
+	Environments map[string]string                 `json:"environments" yaml:"environments"`
+	Log          zapx.Config                       `json:"log" yaml:"log"`
+	Database     client.Config                     `json:"database" yaml:"database"`
+	Dash         dash.Config                       `json:"dash" yaml:"dash"`
+	API          api.Config                        `json:"api" yaml:"api"`
+	File         fileweb.Config                    `json:"file" yaml:"file"`
+	Local        spherefile.LocalFileServiceConfig `json:"local" yaml:"local"`
+	Docs         docs.Config                       `json:"docs" yaml:"docs"`
+	Bot          bot.Config                        `json:"bot" yaml:"bot"`
+	WxMini       wechat.Config                     `json:"wx_mini" yaml:"wx_mini"`
 }
 
 func NewEmptyConfig() *Config {
 	return &Config{
 		Environments: map[string]string{},
-		Log: &zapx.Config{
-			File: &zapx.FileConfig{
+		Log: zapx.Config{
+			File: zapx.FileConfig{
 				FileName:   "./var/log/sphere.log",
 				MaxSize:    10,
 				MaxBackups: 10,
 				MaxAge:     10,
 			},
-			Console: &zapx.ConsoleConfig{},
+			Console: zapx.ConsoleConfig{},
 			Level:   "info",
 		},
-		Database: &client.Config{},
-		Dash: &dash.Config{
+		Database: client.Config{
+			Type:  "sqlite3",
+			Path:  "file:./var/data.db?cache=shared&mode=rwc",
+			Debug: false,
+		},
+		Dash: dash.Config{
 			AuthJWT:    secure.RandString(32),
 			RefreshJWT: secure.RandString(32),
 			HTTP: dash.HTTPConfig{
 				Address: "0.0.0.0:8800",
+				Cors:    nil,
+				Static:  "",
 			},
 		},
-		API: &api.Config{
+		API: api.Config{
 			JWT: secure.RandString(32),
 			HTTP: api.HTTPConfig{
 				Address: "0.0.0.0:8899",
+				Cors:    nil,
 			},
 		},
-		File: &fileserver.Config{
+		File: fileweb.Config{
 			Address: "0.0.0.0:9900",
-			Cors: []string{
-				"http://localhost:*",
-			},
+			Cors:    []string{"http://localhost:*"},
 		},
-		Docs: &docs.Config{
+		Local: spherefile.LocalFileServiceConfig{
+			RootDir:    "./var/file",
+			PublicBase: "http://localhost:9900",
+		},
+		Docs: docs.Config{
 			Address: "0.0.0.0:9999",
 			Targets: docs.Targets{
 				API:  "http://localhost:8899",
 				Dash: "http://localhost:8800",
 			},
 		},
-		Storage: &local.Config{
-			RootDir:    "./var/file",
-			PublicBase: "http://localhost:9900",
+		Bot: bot.Config{
+			Token: "NOT",
 		},
-		Bot: &bot.Config{
-			Token: "",
-		},
-		WxMini: &wechat.Config{
-			AppID:     "",
-			AppSecret: "",
+		WxMini: wechat.Config{
+			AppID:     "YOUR_WX_MINI_APP_ID",
+			AppSecret: "YOUR_WX_MINI_APP_SECRET",
+			Proxy:     "",
 			Env:       "develop",
 		},
 	}
@@ -101,8 +107,8 @@ func NewConfig(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if config.Log == nil {
-		config.Log = zapx.NewDefaultConfig()
+	if config.Log.Level == "" {
+		config.Log.Level = "info"
 	}
 	return config, nil
 }
