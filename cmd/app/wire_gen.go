@@ -35,7 +35,7 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	clientConfig := &conf.Database
+	clientConfig := conf.Database
 	entClient, err := client.NewDataBaseClient(clientConfig)
 	if err != nil {
 		return nil, err

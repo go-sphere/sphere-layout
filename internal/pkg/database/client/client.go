@@ -20,7 +20,7 @@ type Config struct {
 	Debug bool   `json:"debug" yaml:"debug"`
 }
 
-func NewDataBaseClient(config *Config) (*ent.Client, error) {
+func NewDataBaseClient(config Config) (*ent.Client, error) {
 	client, err := ent.Open(config.Type, config.Path)
 	if err != nil {
 		return nil, err
