@@ -25,7 +25,7 @@ type Web struct {
 func NewWebServer(conf Config, storage storage.CDNStorage, service *api.Service) *Web {
 	return &Web{
 		config:    conf,
-		engine:    httpsrv.NewHttpServer("api", conf.HTTP.Address),
+		engine:    httpsrv.NewGinServer("api", conf.HTTP.Address),
 		service:   service,
 		sharedSvc: shared.NewService(storage, "user"),
 	}

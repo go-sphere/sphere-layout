@@ -1,48 +1,29 @@
 package httpsrv
 
 import (
-	"errors"
+	"time"
 
+	ginzap "github.com/gin-contrib/zap"
+	"github.com/gin-gonic/gin"
 	"github.com/go-sphere/httpx"
-	"github.com/go-sphere/httpx/fiberx"
+	"github.com/go-sphere/httpx/ginx"
 	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/log/zapx"
-	"github.com/go-sphere/sphere/server/httpz"
-	"github.com/gofiber/contrib/v3/zap"
-	"github.com/gofiber/fiber/v3"
 )
 
-// NewHttpServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
-func NewHttpServer(name, addr string) httpx.Engine {
+// NewGinServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
+func NewGinServer(name, addr string) httpx.Engine {
 	logger := log.With(log.WithAttrs(map[string]any{"module": name}), log.DisableCaller())
-	engine := fiber.New(fiber.Config{
-		ErrorHandler: func(ctx fiber.Ctx, err error) error {
-			var fErr *fiber.Error
-			if errors.As(err, &fErr) {
-				return ctx.Status(fErr.Code).JSON(httpz.ErrorResponse{
-					Success: false,
-					Code:    0,
-					Error:   "",
-					Message: fErr.Message,
-				})
-			}
-			code, status, message := httpx.ParseError(err)
-			return ctx.Status(int(status)).JSON(httpz.ErrorResponse{
-				Success: false,
-				Code:    int(code),
-				Error:   err.Error(),
-				Message: message,
-			})
-		},
-	})
-	app := fiberx.New(
-		fiberx.WithEngine(engine),
-		fiberx.WithListen(addr),
-	)
+	engine := gin.New()
 	if zapBackend, ok := logger.Backend().(*zapx.Backend); ok {
-		engine.Use(zap.New(zap.Config{
-			Logger: zapBackend.ZapLogger(),
-		}))
+		engine.Use(ginzap.Ginzap(zapBackend.ZapLogger(), time.RFC3339, true))
+		engine.Use(ginzap.RecoveryWithZap(zapBackend.ZapLogger(), true))
+	} else {
+		engine.Use(gin.Recovery())
 	}
+	app := ginx.New(
+		ginx.WithEngine(engine),
+		ginx.WithServerAddr(addr),
+	)
 	return app
 }

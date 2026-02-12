@@ -13,7 +13,7 @@ type Config struct {
 }
 
 func NewWebServer(conf Config, storage *fileserver.FileServer) *file.Web {
-	engine := httpsrv.NewHttpServer("file", conf.Address)
+	engine := httpsrv.NewGinServer("file", conf.Address)
 	if len(conf.Cors) > 0 {
 		engine.Use(cors.NewCORS(cors.WithAllowOrigins(conf.Cors...)))
 	}
