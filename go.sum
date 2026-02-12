@@ -84,8 +84,8 @@ github.com/go-sphere/errors v0.0.1 h1:kdTFOB1L8yyNHaYgpYZPSHu/xeMsEkujmCpkzK+v3h
 github.com/go-sphere/errors v0.0.1/go.mod h1:xShlZuLMCNDjkn8IHMcKVeImtjw1ax8dZuhpcrwqhho=
 github.com/go-sphere/httpx v0.0.2-beta.30.0.20260212043046-b67514f829ab h1:dqcr/zRXK4sRhNA0wvFcTu/yNy9p8D6XGIVjYbcYtA0=
 github.com/go-sphere/httpx v0.0.2-beta.30.0.20260212043046-b67514f829ab/go.mod h1:Vtyau99EFGlImJN/frGdbI8pfR39MojnWMyHXdCCw8U=
-github.com/go-sphere/httpx/fiberx v0.0.2-beta.30.0.20260212043046-b67514f829ab h1:QoEu9oqzavih+NDR3SCYrFbfR+J6MrWLbvbFjOXKOpI=
-github.com/go-sphere/httpx/fiberx v0.0.2-beta.30.0.20260212043046-b67514f829ab/go.mod h1:sZsfskDxr0vkQkHxohM1DYrATJQE5RA3yqHdlJHrlc0=
+github.com/go-sphere/httpx/fiberx v0.0.2-beta.30.0.20260212070553-e0dedc849e0d h1:kZPn4+XGIOxK8dcD6L66yGYqLx7WsXNZGXMzal3lTJE=
+github.com/go-sphere/httpx/fiberx v0.0.2-beta.30.0.20260212070553-e0dedc849e0d/go.mod h1:sZsfskDxr0vkQkHxohM1DYrATJQE5RA3yqHdlJHrlc0=
 github.com/go-sphere/jsoncompressor v0.0.3 h1:Jpdw5vWK5ZDtyd5KQbxvZqOOipgiGW++HCRunIP6vKo=
 github.com/go-sphere/jsoncompressor v0.0.3/go.mod h1:VtfZrSqHNlVWsPO+7U/CGEf7JhfMdEqj/ntquQHNlT0=
 github.com/go-sphere/options v0.0.1 h1:UmctzcFlkkbpl/AX8zJchZBeCPW01JfbGpkWS+XirGo=

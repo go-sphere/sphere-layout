@@ -12,7 +12,7 @@ require (
 	github.com/go-sphere/entc-extensions v0.0.4-beta.3
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/httpx v0.0.2-beta.30.0.20260212043046-b67514f829ab
-	github.com/go-sphere/httpx/fiberx v0.0.2-beta.30.0.20260212043046-b67514f829ab
+	github.com/go-sphere/httpx/fiberx v0.0.2-beta.30.0.20260212070553-e0dedc849e0d
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260212053011-f83776ed16e6
 	github.com/go-sphere/telegram-bot v0.0.2-0.20260211125457-a86be7bf9d63
