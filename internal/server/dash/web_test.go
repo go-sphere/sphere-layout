@@ -140,7 +140,7 @@ func setupTestWeb(t *testing.T) (string, func()) {
 		_ = db.Close()
 		select {
 		case err := <-startErr:
-			if err != nil {
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				t.Fatalf("web server exited with error: %v", err)
 			}
 		case <-time.After(time.Second):
@@ -186,7 +186,7 @@ func randomLocalAddress(t *testing.T) string {
 func newMemoryDB(t *testing.T) *ent.Client {
 	t.Helper()
 
-	conf := &client.Config{
+	conf := client.Config{
 		Type: "sqlite3",
 		Path: fmt.Sprintf("file:dash-web-test-%d?mode=memory&cache=shared", time.Now().UnixNano()),
 	}
