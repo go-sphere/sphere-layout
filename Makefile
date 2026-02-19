@@ -146,6 +146,8 @@ deploy: ## Deploy binary
 	./devops/deploy/deploy.sh
 
 lint: ## Run linter
+	$(GO) vet ./...
+	$(GO) fix ./...
 	$(GOLANG_CI_LINT) run --no-config --fix
 	$(BUF_CLI) lint
 

@@ -29,8 +29,7 @@ func TestWebServer_TokenUploadDownloadFlow(t *testing.T) {
 
 	webServer := NewWebServer(Config{Address: addr}, fileServer)
 
-	startCtx, startCancel := context.WithCancel(context.Background())
-	defer startCancel()
+	startCtx := t.Context()
 
 	startErrCh := make(chan error, 1)
 	go func() {
