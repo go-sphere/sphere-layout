@@ -4,6 +4,7 @@ package main
 
 import (
 	"github.com/go-sphere/sphere-layout/internal"
+	"github.com/go-sphere/sphere-layout/internal/config"
 	"github.com/go-sphere/sphere/core/boot"
 	"github.com/google/wire"
 )
