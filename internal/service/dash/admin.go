@@ -16,7 +16,7 @@ var _ dashv1.AdminServiceHTTPServer = (*Service)(nil)
 func (s *Service) CreateAdmin(ctx context.Context, request *dashv1.CreateAdminRequest) (*dashv1.CreateAdminResponse, error) {
 	request.Admin.Avatar = s.storage.ExtractKeyFromURL(request.Admin.Avatar)
 	request.Admin.Password = secure.CryptPassword(request.Admin.Password)
-	u, err := entbind.CreateAdmin(s.db.Admin.Create(), request.Admin).Save(ctx)
+	u, err := entbind.CreateAdmin(s.db.Admin.Create(), request.Admin, entbind.IgnoreField(admin.FieldID)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

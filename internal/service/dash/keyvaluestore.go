@@ -13,7 +13,7 @@ import (
 var _ dashv1.KeyValueStoreServiceHTTPServer = (*Service)(nil)
 
 func (s *Service) CreateKeyValueStore(ctx context.Context, request *dashv1.CreateKeyValueStoreRequest) (*dashv1.CreateKeyValueStoreResponse, error) {
-	item, err := entbind.CreateKeyValueStore(s.db.KeyValueStore.Create(), request.KeyValueStore).Save(ctx)
+	item, err := entbind.CreateKeyValueStore(s.db.KeyValueStore.Create(), request.KeyValueStore, entbind.IgnoreField(keyvaluestore.FieldID)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
