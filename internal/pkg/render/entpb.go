@@ -49,3 +49,8 @@ func (r *Render) KeyValueStore(value *ent.KeyValueStore) *entpb.KeyValueStore {
 	val, _ := entmap.ToProtoKeyValueStore(value)
 	return val
 }
+
+func (r *Render) KeyValueStoreList(values []*ent.KeyValueStore) []*entpb.KeyValueStore {
+	val, _ := entmap.ToProtoKeyValueStoreList(values)
+	return val
+}

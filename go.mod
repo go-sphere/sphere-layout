@@ -16,7 +16,7 @@ require (
 	github.com/go-sphere/httpx v0.0.2-beta.30.0.20260212043046-b67514f829ab
 	github.com/go-sphere/httpx/ginx v0.0.2-beta.30.0.20260212070553-e0dedc849e0d
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260212053011-f83776ed16e6
+	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260227102049-3cb96f80d727
 	github.com/go-sphere/telegram-bot v0.0.2-0.20260211125457-a86be7bf9d63
 	github.com/go-sphere/weixin-mp-api v0.0.2-0.20260211125647-7e03add0603f
 	github.com/go-sql-driver/mysql v1.9.3
@@ -25,7 +25,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/spf13/cobra v1.10.2
 	github.com/swaggo/swag v1.16.6
-	golang.org/x/exp v0.0.0-20260211191109-2735e65f0518
+	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa
 	golang.org/x/sync v0.19.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260209200024-4cfbd4190f57
 	google.golang.org/protobuf v1.36.11
@@ -103,7 +103,7 @@ require (
 	golang.org/x/arch v0.23.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
@@ -111,9 +111,9 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260209200024-4cfbd4190f57 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.67.7 // indirect
+	modernc.org/libc v1.68.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.44.3 // indirect
+	modernc.org/sqlite v1.46.1 // indirect
 	resty.dev/v3 v3.0.0-beta.6 // indirect
 )

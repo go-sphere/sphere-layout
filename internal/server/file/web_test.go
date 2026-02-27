@@ -11,8 +11,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-sphere/sphere/server/httpz"
 	spherefile "github.com/go-sphere/sphere/server/service/file"
 	"github.com/go-sphere/sphere/storage"
+	"github.com/go-sphere/sphere/storage/fileserver"
 )
 
 func TestWebServer_TokenUploadDownloadFlow(t *testing.T) {
@@ -87,18 +89,15 @@ func TestWebServer_TokenUploadDownloadFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read upload body error = %v", err)
 	}
-	var uploadResult struct {
-		Key string `json:"key"`
-		URL string `json:"url"`
-	}
+	var uploadResult httpz.DataResponse[fileserver.UploadResult]
 	if err = json.Unmarshal(uploadBody, &uploadResult); err != nil {
 		t.Fatalf("decode upload response error = %v, body = %s", err, string(uploadBody))
 	}
-	if uploadResult.Key != authData.File.Key {
-		t.Fatalf("upload response key = %q, want %q", uploadResult.Key, authData.File.Key)
+	if uploadResult.Data.Key != authData.File.Key {
+		t.Fatalf("upload response key = %q, want %q", uploadResult.Data.Key, authData.File.Key)
 	}
-	if uploadResult.URL != authData.File.URL {
-		t.Fatalf("upload response url = %q, want %q", uploadResult.URL, authData.File.URL)
+	if uploadResult.Data.URL != authData.File.URL {
+		t.Fatalf("upload response url = %q, want %q", uploadResult.Data.URL, authData.File.URL)
 	}
 
 	// Step 3: download uploaded file.
