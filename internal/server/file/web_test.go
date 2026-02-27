@@ -121,6 +121,80 @@ func TestWebServer_TokenUploadDownloadFlow(t *testing.T) {
 	}
 }
 
+func TestWebServer_DebugGenerateUploadKey(t *testing.T) {
+	addr, baseURL := mustReserveAddress(t)
+
+	localRoot := t.TempDir()
+	fileServer, err := spherefile.NewLocalFileService(spherefile.LocalFileServiceConfig{
+		RootDir:    localRoot,
+		PublicBase: baseURL,
+	})
+	if err != nil {
+		t.Fatalf("NewLocalFileService() error = %v", err)
+	}
+
+	webServer := NewWebServer(Config{Address: addr, Debug: true}, fileServer)
+
+	startCtx := t.Context()
+	startErrCh := make(chan error, 1)
+	go func() {
+		startErrCh <- webServer.Start(startCtx)
+	}()
+
+	waitForServerReady(t, baseURL)
+
+	t.Cleanup(func() {
+		stopCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		_ = webServer.Stop(stopCtx)
+
+		select {
+		case err := <-startErrCh:
+			if err != nil {
+				t.Logf("web server exited with error: %v", err)
+			}
+		case <-time.After(3 * time.Second):
+			t.Log("web server start goroutine still running after stop")
+		}
+	})
+
+	req, err := http.NewRequest(http.MethodPost, baseURL+"/debug/test.txt", nil)
+	if err != nil {
+		t.Fatalf("http.NewRequest(POST) error = %v", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("debug request error = %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("debug status = %d, body = %s", resp.StatusCode, string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("read debug response error = %v", err)
+	}
+	var data httpz.DataResponse[storage.UploadAuthResult]
+	if err = json.Unmarshal(body, &data); err != nil {
+		t.Fatalf("decode debug response error = %v, body = %s", err, string(body))
+	}
+	if data.Data.Authorization.Value == "" {
+		t.Fatalf("debug response authorization value is empty, body = %s", string(body))
+	}
+	if data.Data.File.Key == "" {
+		t.Fatalf("debug response file key is empty, body = %s", string(body))
+	}
+	if data.Data.File.URL == "" {
+		t.Fatalf("debug response file url is empty, body = %s", string(body))
+	}
+	if got, want := data.Data.File.URL, baseURL+"/"+data.Data.File.Key; got != want {
+		t.Fatalf("debug response url = %q, want %q", got, want)
+	}
+}
+
 func mustReserveAddress(t *testing.T) (string, string) {
 	t.Helper()
 

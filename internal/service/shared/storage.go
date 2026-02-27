@@ -28,8 +28,15 @@ func (s *Service) UploadToken(ctx context.Context, req *sharedv1.UploadTokenRequ
 		return nil, err
 	}
 	return &sharedv1.UploadTokenResponse{
-		Token: token.Authorization.Value,
-		Key:   token.File.Key,
-		Url:   token.File.URL,
+		Authorization: &sharedv1.UploadAuthorization{
+			Type:    string(token.Authorization.Type),
+			Value:   token.Authorization.Value,
+			Method:  token.Authorization.Method,
+			Headers: token.Authorization.Headers,
+		},
+		File: &sharedv1.UploadFileInfo{
+			Key: token.File.Key,
+			Url: token.File.URL,
+		},
 	}, nil
 }

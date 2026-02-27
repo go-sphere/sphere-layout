@@ -17,8 +17,19 @@ message UploadTokenRequest {
   string filename = 1;
 }
 
+message UploadAuthorization {
+  string type = 1;
+  string value = 2;
+  string method = 3;
+  map<string, string> headers = 4;
+}
+
+message UploadFileInfo {
+  string key = 1;
+  string url = 2;
+}
+
 message UploadTokenResponse {
-  string token = 1;
-  string key = 2;
-  string url = 3;
+  UploadAuthorization authorization = 1;
+  UploadFileInfo file = 2;
 }
