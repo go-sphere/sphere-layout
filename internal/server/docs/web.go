@@ -18,7 +18,7 @@ type Config struct {
 
 type Web = docs.Web
 
-func NewWebServer(config *Config) *Web {
+func NewWebServer(config Config) *Web {
 	return docs.NewWebServer(docs.Config{
 		Address: config.Address,
 		Targets: []docs.Target{

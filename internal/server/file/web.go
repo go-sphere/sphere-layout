@@ -34,6 +34,9 @@ type UploadResponse struct {
 // @Failure 400 {object} map[string]any
 // @Failure 500 {object} map[string]any
 // @Router /{key} [put]
+func bindUploadRoute() { //
+	panic("implement by others")
+}
 
 // @Summary Download file
 // @Description Download an uploaded file by file path and return raw binary content.
@@ -44,6 +47,12 @@ type UploadResponse struct {
 // @Failure 404 {object} map[string]any
 // @Failure 500 {object} map[string]any
 // @Router /{filename} [get]
+func bindDownloadRoute() {
+	panic("implement by others")
+}
+
+var _ = bindUploadRoute
+var _ = bindDownloadRoute
 
 // @Summary Generate debug upload auth
 // @Description Generate one-time upload authorization for testing and return storage.UploadAuthResult-like data (authorization + file).
@@ -60,7 +69,7 @@ func bindDebugRoute(engine httpx.Engine, fileServer *fileserver.FileServer) {
 		if filename == "" {
 			return httpx.NewBadRequestError("filename is required")
 		}
-		auth, err := fileServer.GenerateUploadAuth(context, storage.UploadAuthRequest{
+		auth, err := fileServer.GenerateUploadAuth(context.Context(), storage.UploadAuthRequest{
 			FileName: filename,
 		})
 		if err != nil {

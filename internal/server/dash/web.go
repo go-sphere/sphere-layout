@@ -105,7 +105,7 @@ func (w *Web) Stop(ctx context.Context) error {
 }
 
 func (w *Web) withPermission(resource string) httpx.Middleware {
-	return auth.NewPermissionMiddleware(resource, w.acl)
+	return auth.NewPermissionMiddleware[int64](resource, w.acl)
 }
 
 func initDefaultRolesACL(acl *acl.ACL) {
