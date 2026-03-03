@@ -71,14 +71,15 @@ gen/conf: ## Generate example config
 	$(INTERNAL_TOOLS) ./cmd/tools/config gen
 
 gen/db: ## Generate ent code
-	$(INTERNAL_TOOLS) ./cmd/tools/ent
+	$(INTERNAL_TOOLS) ./cmd/tools/gen/ent
 
 gen/proto: gen/db ## Generate proto files and run protoc plugins
 	$(BUF_CLI) dep update
 	$(BUF_CLI) dep prune
 	$(BUF_CLI) generate
 	$(BUF_CLI) generate --template buf.binding.yaml
-	$(INTERNAL_TOOLS) ./cmd/tools/bind
+	$(INTERNAL_TOOLS) ./cmd/tools/gen/entmap
+	$(INTERNAL_TOOLS) ./cmd/tools/gen/entcrud
 
 gen/docs: gen/proto ## Generate swagger docs
 	$(SWAG_CLI) init \

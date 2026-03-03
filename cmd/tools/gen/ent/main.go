@@ -4,7 +4,6 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"path"
 	"runtime/debug"
@@ -16,22 +15,22 @@ import (
 )
 
 func main() {
-	schema := flag.String("schema", "./internal/pkg/database/schema", "path to the schema directory")
-	target := flag.String("target", "./internal/pkg/database/ent", "target directory for generated code")
-	flag.Parse()
+
+	schema := "./internal/pkg/database/schema"
+	target := "./internal/pkg/database/ent"
+
 	ex, err := entproto.NewExtension(
-		entproto.SkipGenFile(),
 		entproto.WithProtoDir("./proto"),
 	)
 	if err != nil {
 		log.Fatalf("create entproto extension: %v", err)
 	}
 	err = entc.Generate(
-		*schema,
+		schema,
 		&gen.Config{
-			Target:  *target,
+			Target:  target,
 			IDType:  &field.TypeInfo{Type: field.TypeInt64},
-			Package: path.Join(currentModule(), *target),
+			Package: path.Join(currentModule(), target),
 			Features: []gen.Feature{
 				gen.FeatureModifier,
 				gen.FeatureExecQuery,

@@ -11,12 +11,12 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-sphere/binding v0.0.4
 	github.com/go-sphere/confstore v0.0.4
-	github.com/go-sphere/entc-extensions/entconv v0.0.0-20260303035843-f40a1d5c1cc1
-	github.com/go-sphere/entc-extensions/entgen v0.0.0-20260303035843-f40a1d5c1cc1
-	github.com/go-sphere/entc-extensions/entproto v0.0.0-20260303035843-f40a1d5c1cc1
+	github.com/go-sphere/entc-extensions/entconv v0.0.0-20260303101036-a6a66118b08f
+	github.com/go-sphere/entc-extensions/entcrud v0.0.0-20260303101036-a6a66118b08f
+	github.com/go-sphere/entc-extensions/entproto v0.0.0-20260303101036-a6a66118b08f
 	github.com/go-sphere/errors v0.0.1
-	github.com/go-sphere/httpx v0.0.2-beta.30.0.20260302014950-228491f299da
-	github.com/go-sphere/httpx/ginx v0.0.2-beta.30.0.20260302015406-0a4634a95afa
+	github.com/go-sphere/httpx v0.0.3-beta.1
+	github.com/go-sphere/httpx/ginx v0.0.3-beta.1
 	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260302021343-0b22ff888bda
 	github.com/go-sphere/telegram-bot v0.0.2-0.20260211125457-a86be7bf9d63
@@ -36,7 +36,6 @@ require (
 require (
 	ariga.io/atlas v0.36.1 // indirect
 	cel.dev/expr v0.25.1 // indirect
-	entgo.io/contrib v0.7.0 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
@@ -90,7 +89,6 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/http-swagger v1.3.4 // indirect

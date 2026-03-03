@@ -4,6 +4,7 @@ import (
 	"github.com/go-sphere/sphere-layout/api/entpb"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
+	"github.com/go-sphere/sphere-layout/internal/pkg/render/entmap"
 )
 
 func (r *Render) AdminLite(value *ent.Admin) *entpb.Admin {
@@ -27,7 +28,7 @@ func (r *Render) UserLite(value *ent.User) *sharedv1.User {
 }
 
 func (r *Render) Admin(value *ent.Admin) *entpb.Admin {
-	val, _ := entpb.ToProtoAdmin(value)
+	val, _ := entmap.ToProtoAdmin(value)
 	if val == nil {
 		return nil
 	}
@@ -41,12 +42,12 @@ func (r *Render) User(value *ent.User) *sharedv1.User {
 }
 
 func (r *Render) AdminSession(value *ent.AdminSession) *entpb.AdminSession {
-	val, _ := entpb.ToProtoAdminSession(value)
+	val, _ := entmap.ToProtoAdminSession(value)
 	return val
 }
 
 func (r *Render) KeyValueStore(value *ent.KeyValueStore) *entpb.KeyValueStore {
-	val, _ := entpb.ToProtoKeyValueStore(value)
+	val, _ := entmap.ToProtoKeyValueStore(value)
 	return val
 }
 
