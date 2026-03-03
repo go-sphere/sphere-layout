@@ -4,7 +4,6 @@ import (
 	"github.com/go-sphere/sphere-layout/api/entpb"
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
-	"github.com/go-sphere/sphere-layout/internal/pkg/render/entmap"
 )
 
 func (r *Render) AdminLite(value *ent.Admin) *entpb.Admin {
@@ -16,41 +15,45 @@ func (r *Render) AdminLite(value *ent.Admin) *entpb.Admin {
 }
 
 func (r *Render) UserLite(value *ent.User) *sharedv1.User {
-	val, _ := entmap.ToProtoUser(value, func(source *ent.User, target *sharedv1.User) error {
-		target.Avatar = r.storage.GenerateURL(source.Avatar)
+	if value == nil {
 		return nil
-	})
-	return val
+	}
+	return &sharedv1.User{
+		Id:       value.ID,
+		Username: value.Username,
+		Avatar:   r.storage.GenerateURL(value.Avatar),
+		Phone:    "",
+	}
 }
 
 func (r *Render) Admin(value *ent.Admin) *entpb.Admin {
-	val, _ := entmap.ToProtoAdmin(value, func(source *ent.Admin, target *entpb.Admin) error {
-		target.Avatar = r.storage.GenerateURL(source.Avatar)
-		target.Password = ""
+	val, _ := entpb.ToProtoAdmin(value)
+	if val == nil {
 		return nil
-	})
+	}
+	val.Password = ""
+	val.Avatar = r.storage.GenerateURL(value.Avatar)
 	return val
 }
 
 func (r *Render) User(value *ent.User) *sharedv1.User {
-	val, _ := entmap.ToProtoUser(value, func(source *ent.User, target *sharedv1.User) error {
-		target.Avatar = r.storage.GenerateURL(source.Avatar)
-		return nil
-	})
-	return val
+	return r.UserLite(value)
 }
 
 func (r *Render) AdminSession(value *ent.AdminSession) *entpb.AdminSession {
-	val, _ := entmap.ToProtoAdminSession(value)
+	val, _ := entpb.ToProtoAdminSession(value)
 	return val
 }
 
 func (r *Render) KeyValueStore(value *ent.KeyValueStore) *entpb.KeyValueStore {
-	val, _ := entmap.ToProtoKeyValueStore(value)
+	val, _ := entpb.ToProtoKeyValueStore(value)
 	return val
 }
 
 func (r *Render) KeyValueStoreList(values []*ent.KeyValueStore) []*entpb.KeyValueStore {
-	val, _ := entmap.ToProtoKeyValueStoreList(values)
-	return val
+	vals := make([]*entpb.KeyValueStore, 0, len(values))
+	for _, v := range values {
+		vals = append(vals, r.KeyValueStore(v))
+	}
+	return vals
 }

@@ -13,18 +13,13 @@ import (
 )
 
 const (
-	PlatformWechatMini = "wechat_mini"
-	PlatformPhone      = "phone"
-)
-
-const (
 	AppTokenValidDuration = time.Hour * 24 * 7
 )
 
 func RenderClaims(user *ent.User, pla *ent.UserPlatform, duration time.Duration) jwtauth.RBACClaims[int64] {
 	return jwtauth.NewRBACClaims(
 		user.ID,
-		pla.Platform+":"+pla.PlatformID,
+		string(pla.Platform)+":"+pla.PlatformID,
 		[]string{},
 		time.Now().Add(duration),
 	)
@@ -108,7 +103,7 @@ func WithAfterCreate(f AfterCreateFunc) Option {
 	}
 }
 
-func login(ctx context.Context, client *ent.Client, platformID, platformType string, opt *options) (*Response, error) {
+func login(ctx context.Context, client *ent.Client, platformID string, platformType userplatform.Platform, opt *options) (*Response, error) {
 	userPlatPred := []predicate.UserPlatform{
 		userplatform.PlatformEQ(platformType),
 	}
@@ -136,7 +131,7 @@ func login(ctx context.Context, client *ent.Client, platformID, platformType str
 	}, nil
 }
 
-func create(ctx context.Context, client *ent.Client, platformID, platformType string, opt *options) (*Response, error) {
+func create(ctx context.Context, client *ent.Client, platformID string, platformType userplatform.Platform, opt *options) (*Response, error) {
 	if opt.beforeCreate != nil {
 		if bErr := opt.beforeCreate(ctx, client); bErr != nil {
 			return nil, bErr
@@ -174,7 +169,7 @@ func create(ctx context.Context, client *ent.Client, platformID, platformType st
 	}, nil
 }
 
-func Auth(ctx context.Context, db *dao.Dao, platformID, platformType string, options ...Option) (*Response, error) {
+func Auth(ctx context.Context, db *dao.Dao, platformID string, platformType userplatform.Platform, options ...Option) (*Response, error) {
 	opt := newOptions(options...)
 	for _, o := range options {
 		o(opt)

@@ -12,27 +12,35 @@ import (
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/schema/field"
-	"github.com/go-sphere/entc-extensions/autoproto"
+	"github.com/go-sphere/entc-extensions/entproto"
 )
 
 func main() {
 	schema := flag.String("schema", "./internal/pkg/database/schema", "path to the schema directory")
 	target := flag.String("target", "./internal/pkg/database/ent", "target directory for generated code")
 	flag.Parse()
-	err := entc.Generate(*schema, &gen.Config{
-		Target:  *target,
-		IDType:  &field.TypeInfo{Type: field.TypeInt64},
-		Package: path.Join(currentModule(), *target),
-		Features: []gen.Feature{
-			gen.FeatureModifier,
-			gen.FeatureExecQuery,
-			gen.FeatureUpsert,
-			gen.FeatureLock,
+	ex, err := entproto.NewExtension(
+		entproto.SkipGenFile(),
+		entproto.WithProtoDir("./proto"),
+	)
+	if err != nil {
+		log.Fatalf("create entproto extension: %v", err)
+	}
+	err = entc.Generate(
+		*schema,
+		&gen.Config{
+			Target:  *target,
+			IDType:  &field.TypeInfo{Type: field.TypeInt64},
+			Package: path.Join(currentModule(), *target),
+			Features: []gen.Feature{
+				gen.FeatureModifier,
+				gen.FeatureExecQuery,
+				gen.FeatureUpsert,
+				gen.FeatureLock,
+			},
 		},
-	}, entc.Extensions(autoproto.NewAutoProtoExtension(&autoproto.ProtoOptions{
-		Graph:    autoproto.NewDefaultGraphOptions(),
-		ProtoDir: "./proto",
-	})))
+		entc.Extensions(ex),
+	)
 	if err != nil {
 		log.Fatal("running ent codegen:", err)
 	}

@@ -7,6 +7,7 @@ import (
 	apiv1 "github.com/go-sphere/sphere-layout/api/api/v1"
 	"github.com/go-sphere/sphere-layout/internal/pkg/auth"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
+	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/userplatform"
 	"github.com/go-sphere/sphere/utils/idgenerator"
 )
 
@@ -21,7 +22,7 @@ func (s *Service) AuthWithWxMini(ctx context.Context, request *apiv1.AuthWithWxM
 		return nil, fmt.Errorf("failed to get session data from WeChat")
 	}
 	res, err := auth.Auth(
-		ctx, s.db, data.OpenID, auth.PlatformWechatMini,
+		ctx, s.db, data.OpenID, userplatform.PlatformWechatMini,
 		auth.WithAuthMode(auth.CreateWithoutCheck),
 		auth.WithOnCreateUser(func(user *ent.UserCreate) *ent.UserCreate {
 			return user.SetUsername(fmt.Sprintf("wx_%d", idgenerator.NextId()))

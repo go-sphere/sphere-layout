@@ -100,8 +100,12 @@ github.com/go-sphere/binding v0.0.4 h1:SB4Jjcsg4UIxiURCQVYRdSNIYZwT/dyRuu9H/4o0n
 github.com/go-sphere/binding v0.0.4/go.mod h1:0mukFqHNQULXOcTDSMsB3S+hfS/de+ooWUOQSQU1yrQ=
 github.com/go-sphere/confstore v0.0.4 h1:LJoui4Q1qryvW/rqKHAdEc0j2eLWH2Eb76LvY0vqcrk=
 github.com/go-sphere/confstore v0.0.4/go.mod h1:rvp2oSOW4x3E8JU0efD9JtHpBM2M3VIqM4rohoSMr34=
-github.com/go-sphere/entc-extensions v0.0.4-beta.3 h1:lviwQseKrLnzo2Fi7MatD00TLDwNSfNjnYJXGJEsbbA=
-github.com/go-sphere/entc-extensions v0.0.4-beta.3/go.mod h1:kUJUQ3sl1mOrSA5lQY0AqThH9tbjFHXEBpghuClYuII=
+github.com/go-sphere/entc-extensions/entconv v0.0.0-20260303035843-f40a1d5c1cc1 h1:4LIsYW//yC0cyuo/HNR79HLfB+BsfjesiR3w/3R6IxI=
+github.com/go-sphere/entc-extensions/entconv v0.0.0-20260303035843-f40a1d5c1cc1/go.mod h1:Gkgyz5IKN+nxXt3bOTCk5TFf2L42FTGDKIZWZ/VaBk4=
+github.com/go-sphere/entc-extensions/entgen v0.0.0-20260303035843-f40a1d5c1cc1 h1:wabUlFBOYBVlLbmF2MjrDsQHWWaU81t3tty+l6gzq7g=
+github.com/go-sphere/entc-extensions/entgen v0.0.0-20260303035843-f40a1d5c1cc1/go.mod h1:ik8of0BJICMXKHIWXsvT4d1KbHLTE3gu9R8YW59aI7c=
+github.com/go-sphere/entc-extensions/entproto v0.0.0-20260303035843-f40a1d5c1cc1 h1:Fkrq8YuQ1gpFXQ79Kj0GlFSE/+/oBRyOy014yoefzeM=
+github.com/go-sphere/entc-extensions/entproto v0.0.0-20260303035843-f40a1d5c1cc1/go.mod h1:W8sQ+N0A1Ge5L55tpnHwz7XQuHpY7xRunDqbB4zE+W4=
 github.com/go-sphere/errors v0.0.1 h1:kdTFOB1L8yyNHaYgpYZPSHu/xeMsEkujmCpkzK+v3hQ=
 github.com/go-sphere/errors v0.0.1/go.mod h1:xShlZuLMCNDjkn8IHMcKVeImtjw1ax8dZuhpcrwqhho=
 github.com/go-sphere/httpx v0.0.2-beta.30.0.20260302014950-228491f299da h1:ivvHmgMAGgAUHTkoKZe9WwwvzUopk9ZDUyUNVYwoJ8Y=
@@ -151,8 +155,10 @@ github.com/hashicorp/hcl/v2 v2.24.0 h1:2QJdZ454DSsYGoaE6QheQZjtKZSUs9Nh2izTWiwQx
 github.com/hashicorp/hcl/v2 v2.24.0/go.mod h1:oGoO1FIQYfn/AgyOhlg9qLC6/nOJPX3qGbkZpYAcqfM=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/jhump/protoreflect v1.17.0 h1:qOEr613fac2lOuTgWN4tPAtLL7fUSbuJL5X5XumQh94=
-github.com/jhump/protoreflect v1.17.0/go.mod h1:h9+vUUL38jiBzck8ck+6G/aeMX8Z4QUY/NiJPwPNi+8=
+github.com/jhump/protoreflect v1.18.0 h1:TOz0MSR/0JOZ5kECB/0ufGnC2jdsgZ123Rd/k4Z5/2w=
+github.com/jhump/protoreflect v1.18.0/go.mod h1:ezWcltJIVF4zYdIFM+D/sHV4Oh5LNU08ORzCGfwvTz8=
+github.com/jhump/protoreflect/v2 v2.0.0-beta.1 h1:Dw1rslK/VotaUGYsv53XVWITr+5RCPXfvvlGrM/+B6w=
+github.com/jhump/protoreflect/v2 v2.0.0-beta.1/go.mod h1:D9LBEowZyv8/iSu97FU2zmXG3JxVTmNw21mu63niFzU=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/klauspost/cpuid/v2 v2.3.0 h1:S4CRMLnYUhGeDFDqkGriYKdfoFlDnMtqTiI/sFzhA9Y=
@@ -178,6 +184,8 @@ github.com/ncruces/go-strftime v1.0.0 h1:HMFp8mLCTPp341M/ZnA4qaf7ZlsbTc+miZjCLOF
 github.com/ncruces/go-strftime v1.0.0/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
 github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
+github.com/petermattis/goid v0.0.0-20260113132338-7c7de50cc741 h1:KPpdlQLZcHfTMQRi6bFQ7ogNO0ltFT4PmtwTLW4W+14=
+github.com/petermattis/goid v0.0.0-20260113132338-7c7de50cc741/go.mod h1:pxMtw7cyUw6B2bRH0ZBANSPg+AoSud1I1iyJHI69jH4=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

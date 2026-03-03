@@ -4,7 +4,6 @@ import (
 	"context"
 
 	apiv1 "github.com/go-sphere/sphere-layout/api/api/v1"
-	"github.com/go-sphere/sphere-layout/internal/pkg/auth"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/userplatform"
 	"github.com/go-sphere/weixin-mp-api/wechat"
 )
@@ -43,9 +42,9 @@ func (s *Service) ListUserPlatforms(ctx context.Context, request *apiv1.ListUser
 	}
 	for _, p := range plat {
 		switch p.Platform {
-		case auth.PlatformWechatMini:
+		case userplatform.PlatformWechatMini:
 			res.WechatMini = p.PlatformID
-		case auth.PlatformPhone:
+		case userplatform.PlatformPhone:
 			res.Phone = p.PlatformID
 		}
 	}
@@ -66,7 +65,7 @@ func (s *Service) BindPhoneWxMini(ctx context.Context, request *apiv1.BindPhoneW
 	}
 	err = s.db.UserPlatform.Create().
 		SetUserID(userId).
-		SetPlatform(auth.PlatformPhone).
+		SetPlatform(userplatform.PlatformPhone).
 		SetPlatformID(number.PhoneInfo.PhoneNumber).
 		Exec(ctx)
 	if err != nil {

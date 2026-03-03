@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
+	"github.com/go-sphere/entc-extensions/entproto"
 )
 
 func TimestampDefaultFunc() int64 {
@@ -17,7 +18,7 @@ func TimestampDefaultFunc() int64 {
 // This is a bit strange, so we manually create these two fields and insert them where needed.
 // This way, the generated proto file can place these two fields in the desired position.
 func DefaultTimeFields() [2]ent.Field {
-	return [2]ent.Field{
+	fields := [2]ent.Field{
 		field.Int64("created_at").
 			Optional().
 			Immutable().
@@ -29,6 +30,23 @@ func DefaultTimeFields() [2]ent.Field {
 			UpdateDefault(TimestampDefaultFunc).
 			Comment("更新时间"),
 	}
+	return fields
+}
+
+func DefaultTimeProtoFields(index [2]int) [2]ent.Field {
+	fields := [2]ent.Field{
+		field.Int64("created_at").
+			Annotations(entproto.Field(index[0])).
+			Immutable().
+			DefaultFunc(TimestampDefaultFunc).
+			Comment("创建时间"),
+		field.Int64("updated_at").
+			Annotations(entproto.Field(index[1])).
+			DefaultFunc(TimestampDefaultFunc).
+			UpdateDefault(TimestampDefaultFunc).
+			Comment("更新时间"),
+	}
+	return fields
 }
 
 type TimeMixin struct {

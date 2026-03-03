@@ -1,6 +1,6 @@
 module github.com/go-sphere/sphere-layout
 
-go 1.25.6
+go 1.26.0
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260209202127-80ab13bee0bf.1
@@ -11,7 +11,9 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-sphere/binding v0.0.4
 	github.com/go-sphere/confstore v0.0.4
-	github.com/go-sphere/entc-extensions v0.0.4-beta.3
+	github.com/go-sphere/entc-extensions/entconv v0.0.0-20260303035843-f40a1d5c1cc1
+	github.com/go-sphere/entc-extensions/entgen v0.0.0-20260303035843-f40a1d5c1cc1
+	github.com/go-sphere/entc-extensions/entproto v0.0.0-20260303035843-f40a1d5c1cc1
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/httpx v0.0.2-beta.30.0.20260302014950-228491f299da
 	github.com/go-sphere/httpx/ginx v0.0.2-beta.30.0.20260302015406-0a4634a95afa
@@ -41,7 +43,6 @@ require (
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
-	github.com/bufbuild/protocompile v0.14.1 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
@@ -75,7 +76,8 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.24.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jhump/protoreflect v1.17.0 // indirect
+	github.com/jhump/protoreflect v1.18.0 // indirect
+	github.com/jhump/protoreflect/v2 v2.0.0-beta.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -88,6 +90,7 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/http-swagger v1.3.4 // indirect
