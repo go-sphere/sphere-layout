@@ -11,16 +11,16 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-sphere/binding v0.0.4
 	github.com/go-sphere/confstore v0.0.4
-	github.com/go-sphere/entc-extensions/entconv v0.0.0-20260303101036-a6a66118b08f
-	github.com/go-sphere/entc-extensions/entcrud v0.0.0-20260303101036-a6a66118b08f
-	github.com/go-sphere/entc-extensions/entproto v0.0.0-20260303101036-a6a66118b08f
+	github.com/go-sphere/entc-extensions/entconv v0.0.4
+	github.com/go-sphere/entc-extensions/entcrud v0.0.4
+	github.com/go-sphere/entc-extensions/entproto v0.0.4
 	github.com/go-sphere/errors v0.0.1
-	github.com/go-sphere/httpx v0.0.3-beta.1
-	github.com/go-sphere/httpx/ginx v0.0.3-beta.1
+	github.com/go-sphere/httpx v0.0.3
+	github.com/go-sphere/httpx/ginx v0.0.3
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.3-beta.9.0.20260302021343-0b22ff888bda
-	github.com/go-sphere/telegram-bot v0.0.2-0.20260211125457-a86be7bf9d63
-	github.com/go-sphere/weixin-mp-api v0.0.2-0.20260211125647-7e03add0603f
+	github.com/go-sphere/sphere v0.0.3
+	github.com/go-sphere/telegram-bot v0.0.2
+	github.com/go-sphere/weixin-mp-api v0.0.2
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/google/uuid v1.6.0
