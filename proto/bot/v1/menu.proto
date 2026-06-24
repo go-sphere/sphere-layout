@@ -11,16 +11,14 @@ service MenuService {
   rpc UpdateCount(UpdateCountRequest) returns (UpdateCountResponse) {
     option (sphere.options.options) = {
       key: "bot"
-      extra: [
-        {
-          key: "command"
-          value: "start"
-        },
-        {
-          key: "callback_query"
-          value: "start"
-        }
-      ]
+      extra: {
+        key: "command"
+        value: "start"
+      }
+      extra: {
+        key: "callback_query"
+        value: "start"
+      }
     };
   }
 }
