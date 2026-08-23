@@ -29,7 +29,10 @@ func TestWebServer_TokenUploadDownloadFlow(t *testing.T) {
 		t.Fatalf("NewLocalFileService() error = %v", err)
 	}
 
-	webServer := NewWebServer(Config{Address: addr}, fileServer)
+	webServer, err := NewWebServer(Config{Address: addr}, fileServer)
+	if err != nil {
+		t.Fatalf("NewWebServer() error = %v", err)
+	}
 
 	startCtx := t.Context()
 
@@ -133,7 +136,10 @@ func TestWebServer_DebugGenerateUploadKey(t *testing.T) {
 		t.Fatalf("NewLocalFileService() error = %v", err)
 	}
 
-	webServer := NewWebServer(Config{Address: addr, Debug: true}, fileServer)
+	webServer, err := NewWebServer(Config{Address: addr, Debug: true}, fileServer)
+	if err != nil {
+		t.Fatalf("NewWebServer() error = %v", err)
+	}
 
 	startCtx := t.Context()
 	startErrCh := make(chan error, 1)

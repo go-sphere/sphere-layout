@@ -14,7 +14,6 @@ import (
 	"github.com/go-sphere/sphere/server/auth/jwtauth"
 	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/go-sphere/sphere/server/middleware/auth"
-	"github.com/go-sphere/sphere/server/middleware/cors"
 	"github.com/go-sphere/sphere/server/middleware/ratelimiter"
 	"github.com/go-sphere/sphere/server/middleware/selector"
 	"github.com/go-sphere/sphere/storage"
@@ -63,8 +62,8 @@ func (w *Web) Start(ctx context.Context) error {
 	needAuthRoute := api.Group("/", authMiddleware)
 	w.service.Init(jwtAuthorizer, jwtRefresher)
 
-	if len(w.config.HTTP.Cors) > 0 {
-		w.engine.Use(cors.NewCORS(cors.WithAllowOrigins(w.config.HTTP.Cors...)))
+	if err := httpsrv.UseCORS(w.engine, w.config.HTTP.Cors); err != nil {
+		return err
 	}
 	initDefaultRolesACL(w.acl)
 
@@ -73,7 +72,7 @@ func (w *Web) Start(ctx context.Context) error {
 
 	authRoute := api.Group("/", NewSessionMetaData())
 	// 根据元数据限定中间件作用范围
-	rateLimiter := ratelimiter.NewNewRateLimiterByClientIP(time.Second, 5, time.Hour)
+	rateLimiter := ratelimiter.NewRateLimiterByClientIP(time.Second, 5, time.Hour)
 	authRoute.Use(
 		selector.NewSelectorMiddleware(
 			selector.MatchFunc(

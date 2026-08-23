@@ -18,7 +18,7 @@ require (
 	github.com/go-sphere/httpx v0.0.3
 	github.com/go-sphere/httpx/ginx v0.0.3
 	github.com/go-sphere/options v0.0.1
-	github.com/go-sphere/sphere v0.0.3
+	github.com/go-sphere/sphere v0.0.4
 	github.com/go-sphere/telegram-bot v0.0.2
 	github.com/go-sphere/weixin-mp-api v0.0.2
 	github.com/go-sql-driver/mysql v1.9.3

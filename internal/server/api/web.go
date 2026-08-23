@@ -11,7 +11,6 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/service/shared"
 	"github.com/go-sphere/sphere/server/auth/jwtauth"
 	"github.com/go-sphere/sphere/server/middleware/auth"
-	"github.com/go-sphere/sphere/server/middleware/cors"
 	"github.com/go-sphere/sphere/storage"
 )
 
@@ -45,8 +44,8 @@ func (w *Web) Start(ctx context.Context) error {
 		auth.WithAbortOnError(false),
 	)
 
-	if len(w.config.HTTP.Cors) > 0 {
-		w.engine.Use(cors.NewCORS(cors.WithAllowOrigins(w.config.HTTP.Cors...)))
+	if err := httpsrv.UseCORS(w.engine, w.config.HTTP.Cors); err != nil {
+		return err
 	}
 
 	w.service.Init(jwtAuthorizer)

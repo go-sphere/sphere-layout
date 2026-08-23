@@ -57,7 +57,10 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 		return nil, err
 	}
 	fileConfig := conf.File
-	fileWeb := file2.NewWebServer(fileConfig, fileServer)
+	fileWeb, err := file2.NewWebServer(fileConfig, fileServer)
+	if err != nil {
+		return nil, err
+	}
 	dashInitialize := dashinit.NewDashInitialize(daoDao)
 	connectCleaner := conncleaner.NewConnectCleaner(daoDao, memoryCache)
 	application := newApplication(web, apiWeb, botBot, fileWeb, dashInitialize, connectCleaner)

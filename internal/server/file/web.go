@@ -6,7 +6,6 @@ import (
 	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/sphere-layout/internal/pkg/httpsrv"
 	"github.com/go-sphere/sphere/server/httpz"
-	"github.com/go-sphere/sphere/server/middleware/cors"
 	"github.com/go-sphere/sphere/server/service/file"
 	"github.com/go-sphere/sphere/storage"
 	"github.com/go-sphere/sphere/storage/fileserver"
@@ -82,10 +81,10 @@ func bindDebugRoute(engine httpx.Engine, fileServer *fileserver.FileServer) {
 	})
 }
 
-func NewWebServer(conf Config, storage *fileserver.FileServer) *file.Web {
+func NewWebServer(conf Config, storage *fileserver.FileServer) (*file.Web, error) {
 	engine := httpsrv.NewGinServer("file", conf.Address)
-	if len(conf.Cors) > 0 {
-		engine.Use(cors.NewCORS(cors.WithAllowOrigins(conf.Cors...)))
+	if err := httpsrv.UseCORS(engine, conf.Cors); err != nil {
+		return nil, err
 	}
 	if conf.Debug {
 		bindDebugRoute(engine, storage)
@@ -93,5 +92,5 @@ func NewWebServer(conf Config, storage *fileserver.FileServer) *file.Web {
 	return file.NewWebServer(
 		engine,
 		storage,
-	)
+	), nil
 }

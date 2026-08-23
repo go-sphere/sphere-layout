@@ -9,6 +9,7 @@ import (
 	"github.com/go-sphere/httpx/ginx"
 	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/log/zapx"
+	"github.com/go-sphere/sphere/server/middleware/cors"
 )
 
 // NewGinServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
@@ -26,4 +27,17 @@ func NewGinServer(name, addr string) httpx.Engine {
 		ginx.WithServerAddr(addr),
 	)
 	return app
+}
+
+// UseCORS attaches CORS middleware when origins is non-empty.
+func UseCORS(engine httpx.Engine, origins []string) error {
+	if len(origins) == 0 {
+		return nil
+	}
+	mw, err := cors.NewCORS(cors.WithAllowOrigins(origins...))
+	if err != nil {
+		return err
+	}
+	engine.Use(mw)
+	return nil
 }

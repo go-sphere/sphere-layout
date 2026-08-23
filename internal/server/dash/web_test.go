@@ -200,9 +200,13 @@ func newMemoryDB(t *testing.T) *ent.Client {
 func insertDefaultAdmin(t *testing.T, db *ent.Client) {
 	t.Helper()
 
-	_, err := db.Admin.Create().
+	password, err := secure.CryptPassword(testAdminPassword)
+	if err != nil {
+		t.Fatalf("crypt password failed: %v", err)
+	}
+	_, err = db.Admin.Create().
 		SetUsername(testAdminUsername).
-		SetPassword(secure.CryptPassword(testAdminPassword)).
+		SetPassword(password).
 		SetRoles([]string{"all"}).
 		Save(context.Background())
 	if err != nil {

@@ -15,7 +15,11 @@ var _ dashv1.AdminServiceHTTPServer = (*Service)(nil)
 
 func (s *Service) CreateAdmin(ctx context.Context, request *dashv1.CreateAdminRequest) (*dashv1.CreateAdminResponse, error) {
 	request.Admin.Avatar = s.storage.ExtractKeyFromURL(request.Admin.Avatar)
-	request.Admin.Password = secure.CryptPassword(request.Admin.Password)
+	hashed, err := secure.CryptPassword(request.Admin.Password)
+	if err != nil {
+		return nil, err
+	}
+	request.Admin.Password = hashed
 	u, err := entbind.CreateAdmin(s.db.Admin.Create(), request.Admin, entbind.IgnoreField(admin.FieldID)).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -70,7 +74,11 @@ func (s *Service) ListAdmins(ctx context.Context, request *dashv1.ListAdminsRequ
 
 func (s *Service) UpdateAdmin(ctx context.Context, req *dashv1.UpdateAdminRequest) (*dashv1.UpdateAdminResponse, error) {
 	if req.Admin.Password != "" {
-		req.Admin.Password = secure.CryptPassword(req.Admin.Password)
+		hashed, err := secure.CryptPassword(req.Admin.Password)
+		if err != nil {
+			return nil, err
+		}
+		req.Admin.Password = hashed
 	}
 	u, err := entbind.UpdateOneAdmin(
 		s.db.Admin.UpdateOneID(req.Admin.Id),

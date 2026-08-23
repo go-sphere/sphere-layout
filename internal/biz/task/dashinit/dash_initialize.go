@@ -24,9 +24,13 @@ func initAdminIfNeed(ctx context.Context, client *ent.Client) error {
 	if err != nil || count > 0 {
 		return nil
 	}
+	password, err := secure.CryptPassword("aA1234567")
+	if err != nil {
+		return err
+	}
 	return client.Admin.Create().
 		SetUsername("admin").
-		SetPassword(secure.CryptPassword("aA1234567")).
+		SetPassword(password).
 		SetRoles([]string{"all"}).
 		Exec(ctx)
 }
