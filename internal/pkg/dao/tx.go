@@ -73,7 +73,7 @@ func WithTx[T any](ctx context.Context, db *ent.Client, exe func(ctx context.Con
 		if reason := recover(); reason != nil {
 			log.Warn("WithTx panic", log.Any("error", reason))
 			_ = tx.Rollback()
-			return
+			panic(reason)
 		}
 	}()
 	result, err := exe(ctx, tx.Client())
@@ -108,7 +108,7 @@ func WithTxEx(ctx context.Context, db *ent.Client, exe func(ctx context.Context,
 		if reason := recover(); reason != nil {
 			log.Warn("WithTxEx panic", log.Any("error", reason))
 			_ = tx.Rollback()
-			return
+			panic(reason)
 		}
 	}()
 	err = exe(ctx, tx.Client())
