@@ -1,7 +1,8 @@
 services:
   app:
     build:
-      context: cmd/app
+      context: .
+      dockerfile: cmd/app/Dockerfile
     volumes:
       - ./config.json:/config/config.json
     restart: always

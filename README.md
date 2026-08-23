@@ -30,6 +30,7 @@ Sphere build tool. Usage: make [target]
   gen/all              Clean and regenerate all generated artifacts
   gen/dts              Generate TypeScript clients from Swagger
   run                  Run the application locally
+  run/race             Run the application with the race detector
   run/swag             Run the Swagger UI server
   lint                 Run Go, Buf, and golangci-lint checks
   fmt                  Format Go modules, Go source, Buf files, and imports
