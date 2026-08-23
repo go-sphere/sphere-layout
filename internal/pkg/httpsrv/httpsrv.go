@@ -26,6 +26,8 @@ func (c *jsonErrorContext) JSON(code int, v any) error {
 }
 
 // NewGinServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
+// Zap request logging is attached when the global logger backend is already a
+// *zapx.Backend (call log.InitWithBackends before Wire constructs the engine).
 func NewGinServer(name, addr string) httpx.Engine {
 	logger := log.With(log.WithAttrs(map[string]any{"module": name}), log.DisableCaller())
 	engine := gin.New()

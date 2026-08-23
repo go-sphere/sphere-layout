@@ -7,6 +7,7 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/server/bot"
 	"github.com/go-sphere/sphere-layout/internal/server/dash"
 	"github.com/go-sphere/sphere/core/boot"
+	"github.com/go-sphere/sphere/core/task"
 	"github.com/go-sphere/sphere/server/service/file"
 )
 
@@ -18,12 +19,11 @@ func newApplication(
 	initialize *dashinit.DashInitialize,
 	cleaner *conncleaner.ConnectCleaner,
 ) *boot.Application {
-	return boot.NewApplication(
-		dash,
-		api,
-		//bot,
-		file,
-		initialize,
-		cleaner,
+	// Cleaner is the first wave so it Starts (noop) before HTTP, and Stops
+	// last — after dash/api/file have drained — instead of closing the DB
+	// concurrently with in-flight requests.
+	return boot.NewStagedApplication(
+		[]task.Task{cleaner},
+		[]task.Task{dash, api, file, initialize},
 	)
 }

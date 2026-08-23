@@ -1,11 +1,11 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/go-sphere/confstore"
 	"github.com/go-sphere/confstore/codec"
-	"github.com/go-sphere/confstore/provider"
 	"github.com/go-sphere/confstore/provider/file"
-	"github.com/go-sphere/confstore/provider/http"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/client"
 	"github.com/go-sphere/sphere-layout/internal/server/api"
 	"github.com/go-sphere/sphere-layout/internal/server/bot"
@@ -95,20 +95,18 @@ func NewEmptyConfig() *Config {
 }
 
 func NewConfig(path string) (*Config, error) {
-	config, err := confstore.Load[Config](provider.NewSelect(
-		path,
-		provider.If(file.IsLocalPath, func(s string) provider.Provider {
-			return file.New(path, file.WithExpandEnv())
-		}),
-		provider.If(http.IsRemoteURL, func(s string) provider.Provider {
-			return http.New(path, http.WithTimeout(10))
-		}),
-	), codec.JsonCodec())
+	config, err := confstore.Load[Config](file.New(path), codec.JsonCodec())
 	if err != nil {
 		return nil, err
 	}
 	if config.Log.Level == "" {
 		config.Log.Level = "info"
+	}
+	if config.Dash.AuthJWT == "" || config.Dash.RefreshJWT == "" {
+		return nil, fmt.Errorf("dash auth_jwt and refresh_jwt must be non-empty")
+	}
+	if config.API.JWT == "" {
+		return nil, fmt.Errorf("api jwt must be non-empty")
 	}
 	return config, nil
 }

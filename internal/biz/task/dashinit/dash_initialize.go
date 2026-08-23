@@ -8,7 +8,13 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/pkg/dao"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/keyvaluestore"
+	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/utils/secure"
+)
+
+const (
+	defaultAdminUsername = "admin"
+	defaultAdminPassword = "aA1234567"
 )
 
 type DashInitialize struct {
@@ -20,19 +26,28 @@ func NewDashInitialize(db *dao.Dao) *DashInitialize {
 }
 
 func initAdminIfNeed(ctx context.Context, client *ent.Client) error {
-	count, err := client.Admin.Query().Count(context.Background())
-	if err != nil || count > 0 {
-		return nil
-	}
-	password, err := secure.CryptPassword("aA1234567")
+	count, err := client.Admin.Query().Count(ctx)
 	if err != nil {
 		return err
 	}
-	return client.Admin.Create().
-		SetUsername("admin").
+	if count > 0 {
+		return nil
+	}
+	password, err := secure.CryptPassword(defaultAdminPassword)
+	if err != nil {
+		return err
+	}
+	if err := client.Admin.Create().
+		SetUsername(defaultAdminUsername).
 		SetPassword(password).
 		SetRoles([]string{"all"}).
-		Exec(ctx)
+		Exec(ctx); err != nil {
+		return err
+	}
+	log.Warn("seeded default dashboard admin; change this password before exposing the service",
+		log.String("username", defaultAdminUsername),
+	)
+	return nil
 }
 
 func (i *DashInitialize) Identifier() string {
@@ -49,15 +64,14 @@ func (i *DashInitialize) Start(ctx context.Context) error {
 		if exist {
 			return nil
 		}
+		if err := initAdminIfNeed(ctx, client); err != nil {
+			return err
+		}
 		_, err = client.KeyValueStore.Create().
 			SetKey(key).
 			SetValue([]byte(strconv.Itoa(int(time.Now().Unix())))).
 			Save(ctx)
-		if err != nil {
-			return err
-		}
-		_ = initAdminIfNeed(ctx, client)
-		return nil
+		return err
 	})
 }
 
