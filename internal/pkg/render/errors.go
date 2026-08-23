@@ -2,6 +2,7 @@ package render
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 
 	"buf.build/go/protovalidate"
@@ -30,15 +31,15 @@ func init() {
 }
 
 func ValidationError(err *protovalidate.ValidationError) (int32, int32, string) {
-	return 0, 400, strings.Join(conv.Map(err.Violations, func(s *protovalidate.Violation) string {
+	return 0, http.StatusBadRequest, strings.Join(conv.Map(err.Violations, func(s *protovalidate.Violation) string {
 		return s.Proto.GetMessage()
 	}), ",")
 }
 
-func EntNotFoundError(err *ent.NotFoundError) (int32, int32, string) {
-	return 0, 404, err.Error()
+func EntNotFoundError(*ent.NotFoundError) (int32, int32, string) {
+	return 0, http.StatusNotFound, http.StatusText(http.StatusNotFound)
 }
 
-func EntConstraintError(err *ent.ConstraintError) (int32, int32, string) {
-	return 0, 400, err.Unwrap().Error()
+func EntConstraintError(*ent.ConstraintError) (int32, int32, string) {
+	return 0, http.StatusBadRequest, http.StatusText(http.StatusBadRequest)
 }

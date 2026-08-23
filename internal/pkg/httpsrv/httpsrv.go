@@ -9,8 +9,21 @@ import (
 	"github.com/go-sphere/httpx/ginx"
 	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/log/zapx"
+	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/go-sphere/sphere/server/middleware/cors"
 )
+
+type httpxContext = httpx.Context
+
+type jsonErrorContext struct {
+	httpxContext
+	gc *gin.Context
+}
+
+func (c *jsonErrorContext) JSON(code int, v any) error {
+	c.gc.JSON(code, v)
+	return nil
+}
 
 // NewGinServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
 func NewGinServer(name, addr string) httpx.Engine {
@@ -25,6 +38,9 @@ func NewGinServer(name, addr string) httpx.Engine {
 	app := ginx.New(
 		ginx.WithEngine(engine),
 		ginx.WithServerAddr(addr),
+		ginx.WithErrorHandler(func(gc *gin.Context, err error) {
+			httpz.AbortWithJsonError(&jsonErrorContext{gc: gc}, err)
+		}),
 	)
 	return app
 }
