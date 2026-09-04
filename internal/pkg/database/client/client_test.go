@@ -14,7 +14,7 @@ func TestAutoMigrateDoesNotDropColumnsByDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create database: %v", err)
 	}
-	if _, err := db.ExecContext(context.Background(), "ALTER TABLE admins ADD COLUMN legacy_value TEXT"); err != nil {
+	if _, err := db.ExecContext(t.Context(), "ALTER TABLE admins ADD COLUMN legacy_value TEXT"); err != nil {
 		_ = db.Close()
 		t.Fatalf("add legacy column: %v", err)
 	}
@@ -39,7 +39,11 @@ func TestAutoMigrateDoesNotDropColumnsByDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("migrate with destructive option: %v", err)
 	}
-	defer db.Close()
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("close database: %v", err)
+		}
+	})
 	if hasColumn(t, db, "admins", "legacy_value") {
 		t.Fatal("destructive auto-migration did not drop the legacy column")
 	}
@@ -49,11 +53,15 @@ func hasColumn(t *testing.T, db interface {
 	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
 }, table, column string) bool {
 	t.Helper()
-	rows, err := db.QueryContext(context.Background(), "PRAGMA table_info("+table+")")
+	rows, err := db.QueryContext(t.Context(), "PRAGMA table_info("+table+")")
 	if err != nil {
 		t.Fatalf("inspect table: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Errorf("close table info rows: %v", err)
+		}
+	}()
 	for rows.Next() {
 		var cid int
 		var name, kind string

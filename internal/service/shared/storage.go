@@ -3,6 +3,7 @@ package shared
 import (
 	"context"
 	"fmt"
+	"path"
 	"strconv"
 
 	sharedv1 "github.com/go-sphere/sphere-layout/api/shared/v1"
@@ -19,10 +20,9 @@ func (s *Service) UploadToken(ctx context.Context, req *sharedv1.UploadTokenRequ
 	if err != nil {
 		return nil, err
 	}
-	key := storage.DefaultKeyBuilder(strconv.Itoa(int(id)))
 	token, err := s.storage.GenerateUploadAuth(ctx, storage.UploadAuthRequest{
-		FileName: key(req.Filename),
-		Dir:      s.storageDir,
+		FileName: req.Filename,
+		Dir:      path.Join(s.storageDir, strconv.FormatInt(id, 10)),
 	})
 	if err != nil {
 		return nil, err
