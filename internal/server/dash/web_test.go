@@ -54,13 +54,8 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 			"username": "wrong-user",
 			"password": "wrong-password",
 		}, nil)
-		if status == http.StatusOK {
-			t.Fatalf("expected non-200 status for invalid credentials, body=%s", body)
-		}
-
-		token := parseLoginToken(t, body)
-		if token != "" {
-			t.Fatalf("expected empty accessToken for invalid credentials, got %q, body=%s", token, body)
+		if status != http.StatusUnauthorized {
+			t.Fatalf("status = %d, want %d, body=%s", status, http.StatusUnauthorized, body)
 		}
 	})
 
@@ -68,10 +63,13 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 		baseURL, cleanup := setupTestWeb(t)
 		defer cleanup()
 
-		_, loginBody := doJSONRequest(t, http.MethodPost, baseURL+"/api/login", map[string]string{
+		loginStatus, loginBody := doJSONRequest(t, http.MethodPost, baseURL+"/api/login", map[string]string{
 			"username": testAdminUsername,
 			"password": testAdminPassword,
 		}, nil)
+		if loginStatus != http.StatusOK {
+			t.Fatalf("login status = %d, want %d, body=%s", loginStatus, http.StatusOK, loginBody)
+		}
 		token := parseLoginToken(t, loginBody)
 		if token == "" {
 			t.Fatalf("expected login token, body=%s", loginBody)
@@ -97,13 +95,8 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 		status, body := doJSONRequest(t, http.MethodGet, baseURL+"/api/admin/list", nil, map[string]string{
 			"Authorization": "Bearer invalid-token",
 		})
-		if status == http.StatusOK {
-			t.Fatalf("expected non-200 status for invalid token, body=%s", body)
-		}
-
-		count := parseAdminCount(t, body)
-		if count != 0 {
-			t.Fatalf("expected no admins for invalid token, got %d, body=%s", count, body)
+		if status != http.StatusUnauthorized {
+			t.Fatalf("status = %d, want %d, body=%s", status, http.StatusUnauthorized, body)
 		}
 	})
 }
@@ -259,7 +252,7 @@ func parseLoginToken(t *testing.T, body string) string {
 		} `json:"data"`
 	}
 	if err := json.Unmarshal([]byte(body), &resp); err != nil {
-		return ""
+		t.Fatalf("decode login response: %v, body=%s", err, body)
 	}
 	return resp.Data.AccessToken
 }
@@ -273,7 +266,7 @@ func parseAdminCount(t *testing.T, body string) int {
 		} `json:"data"`
 	}
 	if err := json.Unmarshal([]byte(body), &resp); err != nil {
-		return 0
+		t.Fatalf("decode admin list response: %v, body=%s", err, body)
 	}
 	return len(resp.Data.Admins)
 }

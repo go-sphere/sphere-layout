@@ -1,63 +1,44 @@
 package conv
 
 import (
-	"encoding/json"
+	"bytes"
 	"testing"
 )
 
 func TestMapStruct(t *testing.T) {
-	type structA struct {
-		Name     string `json:"name"`
-		Age      int    `json:"age"`
-		Raw      []byte `json:"raw"`
-		Internal struct {
-			Name string `json:"name"`
-		} `json:"internal"`
+	type source struct {
+		Name     string
+		Age      string
+		Raw      []byte
+		Internal struct{ Name string }
+	}
+	type target struct {
+		Name     *string
+		Age      int
+		Raw      []byte
+		Internal *struct{ Name string }
 	}
 
-	type structB struct {
-		Name     *string `json:"name"`
-		Age      int     `json:"age"`
-		Raw      []byte  `json:"raw"`
-		Internal *struct {
-			Name string `json:"name"`
-		} `json:"internal"`
+	if got := MapStruct[source, target](nil); got != nil {
+		t.Fatalf("MapStruct(nil) = %#v, want nil", got)
 	}
 
-	a := structA{
-		Name: "Alice",
-		Age:  25,
-		Raw:  []byte("raw"),
-		Internal: struct {
-			Name string `json:"name"`
-		}{
-			Name: "InternalName",
-		},
+	input := source{Name: "Alice", Age: "25", Raw: []byte("raw")}
+	input.Internal.Name = "internal"
+	got := MapStruct[source, target](&input)
+	if got == nil {
+		t.Fatal("MapStruct() = nil")
 	}
-	b := MapStruct[structA, structB](&a)
-	if b == nil {
-		t.Errorf("MapStruct() error = %v", b)
-		return
+	if got.Name == nil || *got.Name != input.Name {
+		t.Errorf("Name = %v, want %q", got.Name, input.Name)
 	}
-	if *b.Name != a.Name {
-		t.Errorf("MapStruct() = %v, want %v", *b.Name, a.Name)
+	if got.Age != 25 {
+		t.Errorf("Age = %d, want 25", got.Age)
 	}
-	if b.Age != a.Age {
-		t.Errorf("MapStruct() = %v, want %v", b.Age, a.Age)
+	if !bytes.Equal(got.Raw, input.Raw) {
+		t.Errorf("Raw = %q, want %q", got.Raw, input.Raw)
 	}
-	if string(b.Raw) != string(a.Raw) {
-		t.Errorf("MapStruct() = %v, want %v", string(b.Raw), string(a.Raw))
+	if got.Internal == nil || got.Internal.Name != input.Internal.Name {
+		t.Errorf("Internal = %#v, want Name %q", got.Internal, input.Internal.Name)
 	}
-	if b.Internal == nil {
-		t.Errorf("MapStruct() = %v, want %v", b.Internal, a.Internal)
-	}
-	if b.Internal.Name != a.Internal.Name {
-		t.Errorf("MapStruct() = %v, want %v", b.Internal.Name, a.Internal.Name)
-	}
-	bytes, err := json.Marshal(b)
-	if err != nil {
-		t.Errorf("MapStruct() error = %v", err)
-		return
-	}
-	t.Logf("MapStruct() = %s", bytes)
 }

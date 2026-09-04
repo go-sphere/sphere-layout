@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -50,11 +51,11 @@ func TestWebServer_TokenUploadDownloadFlow(t *testing.T) {
 
 		select {
 		case err := <-startErrCh:
-			if err != nil {
-				t.Logf("web server exited with error: %v", err)
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				t.Errorf("web server exited with error: %v", err)
 			}
 		case <-time.After(3 * time.Second):
-			t.Log("web server start goroutine still running after stop")
+			t.Error("web server start goroutine still running after stop")
 		}
 	})
 
@@ -156,11 +157,11 @@ func TestWebServer_DebugGenerateUploadKey(t *testing.T) {
 
 		select {
 		case err := <-startErrCh:
-			if err != nil {
-				t.Logf("web server exited with error: %v", err)
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				t.Errorf("web server exited with error: %v", err)
 			}
 		case <-time.After(3 * time.Second):
-			t.Log("web server start goroutine still running after stop")
+			t.Error("web server start goroutine still running after stop")
 		}
 	})
 
