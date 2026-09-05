@@ -31,6 +31,19 @@ require (
 )
 
 require (
+	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/gofiber/fiber/v3 v3.1.0 // indirect
+	github.com/gofiber/schema v1.7.0 // indirect
+	github.com/gofiber/utils/v2 v2.0.2 // indirect
+	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/philhofer/fwd v1.2.0 // indirect
+	github.com/tinylib/msgp v1.6.3 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.69.0 // indirect
+)
+
+require (
 	ariga.io/atlas v1.3.0 // indirect
 	cel.dev/cel-go v0.32.0 // indirect
 	cel.dev/expr v0.25.3 // indirect
@@ -64,6 +77,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.30.4 // indirect
+	github.com/go-sphere/httpx/fiberx v0.0.3
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
