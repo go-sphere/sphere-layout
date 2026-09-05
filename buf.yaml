@@ -5,7 +5,6 @@ modules:
 deps:
     - buf.build/googleapis/googleapis
     - buf.build/bufbuild/protovalidate
-    - buf.build/go-sphere/options
     - buf.build/go-sphere/errors
     - buf.build/go-sphere/binding
 lint:

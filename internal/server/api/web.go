@@ -41,7 +41,7 @@ func (w *Web) Start(ctx context.Context) error {
 		jwtAuthorizer,
 		auth.WithHeaderLoader(auth.AuthorizationHeader),
 		auth.WithPrefixTransform(auth.AuthorizationPrefixBearer),
-		auth.WithAbortOnError(false),
+		auth.WithAbortOnError(true),
 	)
 
 	if err := httpsrv.UseCORS(w.engine, w.config.HTTP.Cors); err != nil {
@@ -50,12 +50,13 @@ func (w *Web) Start(ctx context.Context) error {
 
 	w.service.Init(jwtAuthorizer)
 
-	route := w.engine.Group("/", authMiddleware)
+	publicRoute := w.engine.Group("/")
+	protectedRoute := w.engine.Group("/", authMiddleware)
 
-	sharedv1.RegisterStorageServiceHTTPServer(route, w.sharedSvc)
-	apiv1.RegisterAuthServiceHTTPServer(route, w.service)
-	apiv1.RegisterSystemServiceHTTPServer(route, w.service)
-	apiv1.RegisterUserServiceHTTPServer(route, w.service)
+	apiv1.RegisterAuthServiceHTTPServer(publicRoute, w.service)
+	apiv1.RegisterSystemServiceHTTPServer(publicRoute, w.service)
+	sharedv1.RegisterStorageServiceHTTPServer(protectedRoute, w.sharedSvc)
+	apiv1.RegisterUserServiceHTTPServer(protectedRoute, w.service)
 
 	return w.engine.Start()
 }

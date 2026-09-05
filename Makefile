@@ -65,6 +65,8 @@ clean: ## Clean gen code and build files
 	rm -rf ./build/*
 	rm -rf ./swagger/*
 	rm -rf ./internal/pkg/database/ent/*
+	rm -rf ./internal/pkg/render/entbind/*
+	rm -rf ./internal/pkg/render/entmap/*
 
 gen/wire: ## Generate wire code
 	cd cmd/app/ && $(WIRE_CLI) gen

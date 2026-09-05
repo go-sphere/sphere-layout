@@ -109,7 +109,7 @@ func setupTestWeb(t *testing.T) (string, func()) {
 	insertDefaultAdmin(t, db)
 
 	testStorage := &noopStorage{}
-	service := servicedash.NewService(dao.NewDao(db), nil, memory.NewByteCache(), testStorage)
+	service := servicedash.NewService(dao.NewDao(db), memory.NewByteCache(), testStorage)
 	web := NewWebServer(Config{
 		AuthJWT:    "test-auth-jwt-secret",
 		RefreshJWT: "test-refresh-jwt-secret",

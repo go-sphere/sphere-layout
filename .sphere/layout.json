@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "name": "standard",
+  "upstream": {
+    "repository": "https://github.com/go-sphere/sphere-layout.git",
+    "ref": "master",
+    "module": "github.com/go-sphere/sphere-layout"
+  },
+  "capabilities": [
+    "protobuf",
+    "gin-http",
+    "ent",
+    "wire",
+    "swagger",
+    "typescript-client",
+    "dashboard",
+    "password-auth",
+    "local-storage"
+  ],
+  "ownership": {
+    "layout_owned": [
+      ".github/workflows/**",
+      ".dockerignore",
+      ".gitignore",
+      ".sphere/layout.json",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "LICENSE",
+      "buf.gen.yaml",
+      "buf.binding.yaml",
+      "buf.yaml",
+      "cmd/app/Dockerfile",
+      "cmd/tools/**",
+      "docs/docs.*.go",
+      "internal/pkg/app/**",
+      "internal/pkg/httpsrv/**",
+      "scripts/**"
+    ],
+    "mixed": [
+      "Makefile",
+      "go.mod",
+      "cmd/app/builder.go",
+      "cmd/app/main.go",
+      "cmd/app/wire.go",
+      "internal/config/**",
+      "internal/wire.go",
+      "internal/*/wire.go",
+      "internal/server/*/web.go",
+      "internal/pkg/database/schema/**",
+      "internal/pkg/auth/**",
+      "internal/service/api/auth.go",
+      "proto/api/v1/auth.proto",
+      "proto/api/v1/user.proto",
+      "proto/shared/v1/user.proto"
+    ],
+    "generated": [
+      "api/**",
+      "build/**",
+      "swagger/**",
+      "var/**",
+      "config.json",
+      "config_gen.json",
+      "buf.lock",
+      "go.sum",
+      "cmd/app/wire_gen.go",
+      "proto/entpb/entpb.proto",
+      "internal/pkg/database/ent/**",
+      "internal/pkg/render/entbind/**",
+      "internal/pkg/render/entmap/**"
+    ],
+    "default": "project_owned"
+  }
+}

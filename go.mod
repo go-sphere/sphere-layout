@@ -17,10 +17,7 @@ require (
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/httpx v0.0.3
 	github.com/go-sphere/httpx/ginx v0.0.3
-	github.com/go-sphere/options v0.0.1
 	github.com/go-sphere/sphere v0.0.4
-	github.com/go-sphere/telegram-bot v0.0.2
-	github.com/go-sphere/weixin-mp-api v0.0.2
 	github.com/go-sql-driver/mysql v1.10.1
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/google/uuid v1.6.0
@@ -67,8 +64,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.30.4 // indirect
-	github.com/go-sphere/jsoncompressor v0.0.3 // indirect
-	github.com/go-telegram/bot v1.18.0 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
@@ -118,5 +113,4 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.46.1 // indirect
-	resty.dev/v3 v3.0.0-beta.6 // indirect
 )

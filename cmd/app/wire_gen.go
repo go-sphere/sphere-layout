@@ -7,23 +7,19 @@
 package main
 
 import (
-	"github.com/go-sphere/sphere-layout/internal"
 	"github.com/go-sphere/sphere-layout/internal/biz/task/conncleaner"
 	"github.com/go-sphere/sphere-layout/internal/biz/task/dashinit"
 	"github.com/go-sphere/sphere-layout/internal/config"
 	"github.com/go-sphere/sphere-layout/internal/pkg/dao"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/client"
 	api2 "github.com/go-sphere/sphere-layout/internal/server/api"
-	bot2 "github.com/go-sphere/sphere-layout/internal/server/bot"
 	dash2 "github.com/go-sphere/sphere-layout/internal/server/dash"
 	file2 "github.com/go-sphere/sphere-layout/internal/server/file"
 	"github.com/go-sphere/sphere-layout/internal/service/api"
-	"github.com/go-sphere/sphere-layout/internal/service/bot"
 	"github.com/go-sphere/sphere-layout/internal/service/dash"
 	"github.com/go-sphere/sphere/cache/memory"
 	"github.com/go-sphere/sphere/core/boot"
 	"github.com/go-sphere/sphere/server/service/file"
-	"github.com/go-sphere/weixin-mp-api/wechat"
 )
 
 // Injectors from wire.go:
@@ -41,28 +37,19 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 		return nil, err
 	}
 	daoDao := dao.NewDao(entClient)
-	wechatConfig := conf.WxMini
-	cache := internal.NewWechatCache()
-	wechatWechat := wechat.NewWechat(wechatConfig, cache)
-	memoryCache := memory.NewByteCache()
-	service := dash.NewService(daoDao, wechatWechat, memoryCache, fileServer)
+	v := memory.NewByteCache()
+	service := dash.NewService(daoDao, v, fileServer)
 	web := dash2.NewWebServer(dashConfig, fileServer, service)
 	apiConfig := conf.API
-	apiService := api.NewService(daoDao, wechatWechat, memoryCache, fileServer)
+	apiService := api.NewService(daoDao, v, fileServer)
 	apiWeb := api2.NewWebServer(apiConfig, fileServer, apiService)
-	telegramConfig := conf.Bot
-	botService := bot.NewService()
-	botBot, err := bot2.NewApp(telegramConfig, botService)
-	if err != nil {
-		return nil, err
-	}
 	fileConfig := conf.File
 	fileWeb, err := file2.NewWebServer(fileConfig, fileServer)
 	if err != nil {
 		return nil, err
 	}
 	dashInitialize := dashinit.NewDashInitialize(daoDao)
-	connectCleaner := conncleaner.NewConnectCleaner(daoDao, memoryCache)
-	application := newApplication(web, apiWeb, botBot, fileWeb, dashInitialize, connectCleaner)
+	connectCleaner := conncleaner.NewConnectCleaner(daoDao, v)
+	application := newApplication(web, apiWeb, fileWeb, dashInitialize, connectCleaner)
 	return application, nil
 }

@@ -23,7 +23,6 @@ func (r *Render) UserLite(value *ent.User) *sharedv1.User {
 		Id:       value.ID,
 		Username: value.Username,
 		Avatar:   r.storage.GenerateURL(value.Avatar),
-		Phone:    "",
 	}
 }
 

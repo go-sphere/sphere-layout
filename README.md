@@ -11,6 +11,11 @@ The default stack is:
 - Swagger/OpenAPI and TypeScript client generation.
 - Makefile targets as the day-to-day workflow contract.
 
+The application API includes a deliberately small username/password example.
+Telegram, WeChat, and other provider integrations are separate concerns rather
+than dependencies of the standard layout. Use `sphere-telegram-layout` when a
+Telegram transport example is required.
+
 These choices are defaults, not hard framework requirements. The layout is intended to show a complete integration path while keeping each third-party tool visible and replaceable.
 
 ## Workflow Contract
@@ -85,6 +90,17 @@ Application code should live outside those generated outputs whenever possible:
 - project commands and local tooling in `cmd/tools/**`.
 
 This boundary keeps regeneration safe and makes it clear which files are owned by tools.
+
+## Layout Ownership and Updates
+
+The machine-readable ownership contract is `.sphere/layout.json`. Projects
+created by a compatible `sphere-cli` also contain `.sphere/layout.lock.json`
+with the exact upstream commit used to create them. AI agents must follow
+[`docs/LAYOUT_CONTRACT.md`](docs/LAYOUT_CONTRACT.md) when adding business code
+or synchronizing a project with a newer layout revision.
+
+Files not explicitly classified by the contract are project-owned. This
+default prevents a layout update from overwriting application code.
 
 ## Replaceable Defaults
 

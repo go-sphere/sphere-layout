@@ -6,7 +6,6 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/pkg/conv"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/user"
-	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/userplatform"
 )
 
 func (d *Dao) GetUsers(ctx context.Context, ids []int64) (map[int64]*ent.User, error) {
@@ -19,16 +18,4 @@ func (d *Dao) GetUsers(ctx context.Context, ids []int64) (map[int64]*ent.User, e
 		userMap[u.ID] = u
 	}
 	return userMap, nil
-}
-
-func (d *Dao) GetUserPlatforms(ctx context.Context, ids []int64) (map[int64][]*ent.UserPlatform, error) {
-	userPlatforms, err := d.UserPlatform.Query().Where(userplatform.UserIDIn(conv.UniqueSorted(ids)...)).All(ctx)
-	if err != nil {
-		return nil, err
-	}
-	userPlatformMap := make(map[int64][]*ent.UserPlatform)
-	for _, up := range userPlatforms {
-		userPlatformMap[up.UserID] = append(userPlatformMap[up.UserID], up)
-	}
-	return userPlatformMap, nil
 }

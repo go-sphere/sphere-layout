@@ -8,14 +8,12 @@ import (
 	"github.com/go-sphere/confstore/provider/file"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/client"
 	"github.com/go-sphere/sphere-layout/internal/server/api"
-	"github.com/go-sphere/sphere-layout/internal/server/bot"
 	"github.com/go-sphere/sphere-layout/internal/server/dash"
 	"github.com/go-sphere/sphere-layout/internal/server/docs"
 	fileweb "github.com/go-sphere/sphere-layout/internal/server/file"
 	"github.com/go-sphere/sphere/log/zapx"
 	spherefile "github.com/go-sphere/sphere/server/service/file"
 	"github.com/go-sphere/sphere/utils/secure"
-	"github.com/go-sphere/weixin-mp-api/wechat"
 )
 
 var BuildVersion = "dev"
@@ -29,8 +27,6 @@ type Config struct {
 	File         fileweb.Config                    `json:"file" yaml:"file"`
 	Local        spherefile.LocalFileServiceConfig `json:"local" yaml:"local"`
 	Docs         docs.Config                       `json:"docs" yaml:"docs"`
-	Bot          bot.Config                        `json:"bot" yaml:"bot"`
-	WxMini       wechat.Config                     `json:"wx_mini" yaml:"wx_mini"`
 }
 
 func NewEmptyConfig() *Config {
@@ -81,15 +77,6 @@ func NewEmptyConfig() *Config {
 				API:  "http://localhost:8899",
 				Dash: "http://localhost:8800",
 			},
-		},
-		Bot: bot.Config{
-			Token: "NOT",
-		},
-		WxMini: wechat.Config{
-			AppID:     "YOUR_WX_MINI_APP_ID",
-			AppSecret: "YOUR_WX_MINI_APP_SECRET",
-			Proxy:     "",
-			Env:       "develop",
 		},
 	}
 }
