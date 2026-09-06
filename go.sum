@@ -114,8 +114,8 @@ github.com/go-sphere/httpx/fiberx v0.0.4 h1:L0CUyFczf9gefzIfx/sxQkLvruXk0Ftk8T2Q
 github.com/go-sphere/httpx/fiberx v0.0.4/go.mod h1:CqG89UDYN+sQtUomj47Pum86ST+8VDK650eXPWRuix4=
 github.com/go-sphere/httpx/ginx v0.0.4 h1:VMh2bLMpL3Mf/cn75b/EoG550ijLQlSt6g11/vWOs+E=
 github.com/go-sphere/httpx/ginx v0.0.4/go.mod h1:YeEB76un8SCz336nk5YdpBBCZv7HV6C2i834Kop6psY=
-github.com/go-sphere/sphere v0.0.6-0.20260906105616-8adadb6d7b8f h1:Tq54iIHKcevHtnQdG4fsTARBTUlb4VzBqbE+Q2e77ck=
-github.com/go-sphere/sphere v0.0.6-0.20260906105616-8adadb6d7b8f/go.mod h1:hAkuuKbO5nEf3V5Hxmg7GEsvz3pzZjcePEd7m4GibSM=
+github.com/go-sphere/sphere v0.0.6-0.20260906140008-0292cf303e83 h1:Bef1375ObTXwi1vurX7Vxn85PjAGESA5NMy7Gp/7Zog=
+github.com/go-sphere/sphere v0.0.6-0.20260906140008-0292cf303e83/go.mod h1:hAkuuKbO5nEf3V5Hxmg7GEsvz3pzZjcePEd7m4GibSM=
 github.com/go-sql-driver/mysql v1.10.1 h1:arlSnNLq6a5yxGxV7qg9lF4j0C+KwD6NbQyKr9QL6ME=
 github.com/go-sql-driver/mysql v1.10.1/go.mod h1:M+cqaI7+xxXGG9swrdeUIoPG3Y3KCkF0pZej+SK+nWk=
 github.com/go-test/deep v1.0.3 h1:ZrJSEWsXzPOxaZnFteGEfooLba+ju3FYIbOrS+rQd68=
