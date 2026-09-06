@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sphere Dash</title>
+  <link rel="stylesheet" href="https://unpkg.com/boltcss/bolt.min.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      max-width: 960px;
+      height: 100vh;
+      margin: 0 auto;
+      padding: 24px;
+      overflow: hidden;
+    }
+    form, .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    form input { margin: 0; }
+    .error { color: #e74c3c; }
+    .notice { color: #d97706; }
+    .logs {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      background: var(--background-main);
+      border: 1px solid darkgray;
+      border-radius: var(--border-radius);
+    }
+    .log-error { color: #e74c3c; }
+    .log-warn { color: #d97706; }
+    .log-info { color: var(--links); }
+    .log-debug { color: var(--focus-highlight); }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <h1>Sphere Dash</h1>
+    <aside v-if="fileNotice" class="notice">{{ fileNotice }}</aside>
+    <p v-if="error" class="error">{{ error }}</p>
+    <form v-if="!session" @submit.prevent="login">
+      <input v-model.trim="username" name="username" autocomplete="username" placeholder="username" required>
+      <input v-model="password" name="password" type="password" autocomplete="current-password" placeholder="password" required>
+      <button type="submit">Login</button>
+    </form>
+    <div v-else class="toolbar">
+      <button type="button" @click="refreshNow">Refresh token</button>
+      <button type="button" @click="logout">Logout</button>
+    </div>
+    <div v-if="session" class="logs">
+      <div v-for="entry in logs" :key="entry.seq" :class="'log-' + entry.level">{{ formatLog(entry) }}</div>
+      <div v-if="logs.length === 0">Waiting for logs…</div>
+    </div>
+  </main>
+  <script>
+    (function () {
+      if (typeof window === "undefined") {
+        return;
+      }
+      var appEl = document.getElementById("app");
+      if (typeof Vue === "undefined") {
+        if (appEl) {
+          appEl.textContent = "Vue 3 failed to load. Allow the CDN or serve this page from /dash.";
+        }
+        return;
+      }
+
+      var fileNotice = "";
+      if (window.location && window.location.protocol === "file:") {
+        fileNotice = "Opened as a file. Login talks to http://127.0.0.1:8800; serve this page from /dash for same-origin use.";
+      }
+
+      function apiOrigin() {
+        if (window.location && window.location.protocol === "file:") {
+          return "http://127.0.0.1:8800";
+        }
+        return "";
+      }
+
+      function unwrap(payload) {
+        if (payload && payload.data) {
+          return payload.data;
+        }
+        return payload || {};
+      }
+
+      Vue.createApp({
+        data: function () {
+          return {
+            username: "admin",
+            password: "",
+            error: "",
+            fileNotice: fileNotice,
+            session: null,
+            logs: [],
+            refreshTimer: 0,
+            abortTail: null
+          };
+        },
+        methods: {
+          apiURL: function (path) {
+            return apiOrigin() + path;
+          },
+          authHeaders: function () {
+            return {
+              Authorization: "Bearer " + this.session.accessToken
+            };
+          },
+          clearTimers: function () {
+            if (this.refreshTimer) {
+              clearTimeout(this.refreshTimer);
+              this.refreshTimer = 0;
+            }
+            if (this.abortTail) {
+              this.abortTail.abort();
+              this.abortTail = null;
+            }
+          },
+          scheduleRefresh: function () {
+            var self = this;
+            if (this.refreshTimer) {
+              clearTimeout(this.refreshTimer);
+            }
+            if (!this.session || !this.session.expiresAt) {
+              return;
+            }
+            var delay = this.session.expiresAt * 1000 - Date.now() - 30000;
+            if (delay < 5000) {
+              delay = 5000;
+            }
+            this.refreshTimer = setTimeout(function () {
+              self.refreshNow();
+            }, delay);
+          },
+          login: async function () {
+            this.error = "";
+            try {
+              var response = await fetch(this.apiURL("/api/auth/login"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  username: this.username,
+                  password: this.password
+                })
+              });
+              var payload = await response.json();
+              if (!response.ok) {
+                throw new Error(payload.message || payload.error || "login failed");
+              }
+              this.acceptTokens(unwrap(payload));
+              this.password = "";
+              await this.startLogs();
+            } catch (err) {
+              this.error = err && err.message ? err.message : String(err);
+            }
+          },
+          refreshNow: async function () {
+            if (!this.session) {
+              return;
+            }
+            this.error = "";
+            try {
+              var response = await fetch(this.apiURL("/api/auth/refresh"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ refresh_token: this.session.refreshToken })
+              });
+              var payload = await response.json();
+              if (!response.ok) {
+                throw new Error(payload.message || payload.error || "refresh failed");
+              }
+              this.acceptTokens(unwrap(payload));
+            } catch (err) {
+              this.error = err && err.message ? err.message : String(err);
+              this.logout();
+            }
+          },
+          acceptTokens: function (data) {
+            if (!data || !data.access_token || !data.refresh_token) {
+              throw new Error("login response missing tokens");
+            }
+            this.session = {
+              accessToken: data.access_token,
+              refreshToken: data.refresh_token,
+              expiresAt: data.expires_at || 0
+            };
+            this.scheduleRefresh();
+          },
+          logout: function () {
+            this.clearTimers();
+            this.session = null;
+            this.logs = [];
+          },
+          formatLog: function (entry) {
+            var time = "";
+            if (entry.time && entry.time.seconds) {
+              time = new Date(entry.time.seconds * 1000).toISOString();
+            }
+            return [time, (entry.level || "").toUpperCase(), entry.name, entry.message]
+              .filter(Boolean)
+              .join(" ");
+          },
+          appendEntries: function (entries) {
+            if (!entries || !entries.length) {
+              return;
+            }
+            var seen = {};
+            var merged = this.logs.concat(entries);
+            var unique = [];
+            for (var i = 0; i < merged.length; i++) {
+              var item = merged[i];
+              if (seen[item.seq]) {
+                continue;
+              }
+              seen[item.seq] = true;
+              unique.push(item);
+            }
+            unique.sort(function (a, b) { return a.seq - b.seq; });
+            this.logs = unique;
+          },
+          startLogs: async function () {
+            this.logs = [];
+            if (this.abortTail) {
+              this.abortTail.abort();
+              this.abortTail = null;
+            }
+            var lastSeq = 0;
+            var streamId = "";
+            try {
+              var history = await fetch(this.apiURL("/api/logs/history?limit=100"), {
+                headers: this.authHeaders()
+              });
+              var historyPayload = unwrap(await history.json());
+              if (!history.ok) {
+                throw new Error(historyPayload.message || "log history failed");
+              }
+              this.appendEntries(historyPayload.entries || []);
+              lastSeq = historyPayload.latest_seq || lastSeq;
+              streamId = historyPayload.stream_id || "";
+            } catch (err) {
+              this.error = err && err.message ? err.message : String(err);
+            }
+            await this.tailLogs(streamId, lastSeq);
+          },
+          tailLogs: async function (streamId, fromSeq) {
+            var self = this;
+            if (!this.session) {
+              return;
+            }
+            if (this.abortTail) {
+              this.abortTail.abort();
+            }
+            this.abortTail = typeof AbortController === "function" ? new AbortController() : null;
+            var query = "/api/logs/tail?tail_limit=200&from_seq=" + encodeURIComponent(fromSeq || 0);
+            if (streamId) {
+              query += "&stream_id=" + encodeURIComponent(streamId);
+            }
+            try {
+              var response = await fetch(this.apiURL(query), {
+                headers: this.authHeaders(),
+                signal: this.abortTail ? this.abortTail.signal : undefined
+              });
+              if (response.status === 401) {
+                await this.refreshNow();
+                if (this.session) {
+                  await this.tailLogs(streamId, fromSeq);
+                }
+                return;
+              }
+              if (!response.ok || !response.body || !response.body.getReader) {
+                this.pollLogs();
+                return;
+              }
+              var reader = response.body.getReader();
+              var decoder = new TextDecoder();
+              var buf = "";
+              while (this.session) {
+                var chunk = await reader.read();
+                if (chunk.done) {
+                  break;
+                }
+                buf += decoder.decode(chunk.value, { stream: true });
+                var parts = buf.split("\n\n");
+                buf = parts.pop();
+                for (var i = 0; i < parts.length; i++) {
+                  var event = "message";
+                  var data = "";
+                  var lines = parts[i].split("\n");
+                  for (var j = 0; j < lines.length; j++) {
+                    var line = lines[j];
+                    if (line.indexOf("event:") === 0) {
+                      event = line.slice(6).trim();
+                    } else if (line.indexOf("data:") === 0) {
+                      data = line.slice(5).trim();
+                    }
+                  }
+                  if (!data || event === "done") {
+                    continue;
+                  }
+                  if (event === "error") {
+                    throw new Error(data);
+                  }
+                  var frame = JSON.parse(data);
+                  self.appendEntries(frame.entries || []);
+                  if (frame.last_seq) {
+                    fromSeq = frame.last_seq;
+                  }
+                  if (frame.stream_id) {
+                    streamId = frame.stream_id;
+                  }
+                }
+              }
+            } catch (err) {
+              if (err && err.name === "AbortError") {
+                return;
+              }
+              this.pollLogs();
+            }
+          },
+          pollLogs: function () {
+            var self = this;
+            if (!this.session) {
+              return;
+            }
+            var poll = async function () {
+              if (!self.session) {
+                return;
+              }
+              try {
+                var response = await fetch(self.apiURL("/api/logs/history?limit=100"), {
+                  headers: self.authHeaders()
+                });
+                if (response.status === 401) {
+                  await self.refreshNow();
+                  return;
+                }
+                var payload = unwrap(await response.json());
+                self.appendEntries(payload.entries || []);
+              } catch (err) {
+                self.error = err && err.message ? err.message : String(err);
+              }
+              if (self.session) {
+                setTimeout(poll, 2000);
+              }
+            };
+            poll();
+          }
+        },
+        unmounted: function () {
+          this.clearTimers();
+        }
+      }).mount("#app");
+    })();
+  </script>
+</body>
+</html>

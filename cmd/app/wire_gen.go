@@ -12,6 +12,7 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/config"
 	"github.com/go-sphere/sphere-layout/internal/pkg/dao"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/client"
+	"github.com/go-sphere/sphere-layout/internal/pkg/logging"
 	api2 "github.com/go-sphere/sphere-layout/internal/server/api"
 	dash2 "github.com/go-sphere/sphere-layout/internal/server/dash"
 	file2 "github.com/go-sphere/sphere-layout/internal/server/file"
@@ -19,12 +20,14 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/service/dash"
 	"github.com/go-sphere/sphere/cache/memory"
 	"github.com/go-sphere/sphere/core/boot"
+	"github.com/go-sphere/sphere/core/task"
+	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/server/service/file"
 )
 
 // Injectors from wire.go:
 
-func NewApplication(conf *config.Config) (*boot.Application, error) {
+func buildApplication(conf *config.Config, logger log.Backend, stop *task.Func) (*boot.Application, error) {
 	dashConfig := conf.Dash
 	localFileServiceConfig := conf.Local
 	fileServer, err := file.NewLocalFileService(localFileServiceConfig)
@@ -38,18 +41,19 @@ func NewApplication(conf *config.Config) (*boot.Application, error) {
 	}
 	daoDao := dao.NewDao(entClient)
 	v := memory.NewByteCache()
-	service := dash.NewService(daoDao, v, fileServer)
-	web := dash2.NewWebServer(dashConfig, fileServer, service)
+	buffer := logging.Buffer(logger)
+	service := dash.NewService(daoDao, v, fileServer, buffer)
+	web := dash2.NewWebServer(dashConfig, fileServer, service, logger)
 	apiConfig := conf.API
 	apiService := api.NewService(daoDao, v, fileServer)
-	apiWeb := api2.NewWebServer(apiConfig, fileServer, apiService)
+	apiWeb := api2.NewWebServer(apiConfig, fileServer, apiService, logger)
 	fileConfig := conf.File
-	fileWeb, err := file2.NewWebServer(fileConfig, fileServer)
+	fileWeb, err := file2.NewWebServer(fileConfig, fileServer, logger)
 	if err != nil {
 		return nil, err
 	}
-	dashInitialize := dashinit.NewDashInitialize(daoDao)
+	dashInitialize := dashinit.NewDashInitialize(daoDao, dashConfig)
 	connectCleaner := conncleaner.NewConnectCleaner(daoDao, v)
-	application := newApplication(web, apiWeb, fileWeb, dashInitialize, connectCleaner)
+	application := newApplication(stop, web, apiWeb, fileWeb, dashInitialize, connectCleaner)
 	return application, nil
 }

@@ -6,8 +6,6 @@ require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2
 	buf.build/go/protovalidate v1.4.0
 	entgo.io/ent v0.14.6
-	github.com/alitto/pond/v2 v2.7.1
-	github.com/gin-contrib/zap v1.1.7
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-sphere/binding v0.0.4
 	github.com/go-sphere/confstore v0.0.4
@@ -17,7 +15,7 @@ require (
 	github.com/go-sphere/errors v0.0.1
 	github.com/go-sphere/httpx v0.0.4
 	github.com/go-sphere/httpx/ginx v0.0.4
-	github.com/go-sphere/sphere v0.0.5
+	github.com/go-sphere/sphere v0.0.6-0.20260906105616-8adadb6d7b8f
 	github.com/go-sql-driver/mysql v1.10.1
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/google/uuid v1.6.0
@@ -28,19 +26,6 @@ require (
 	golang.org/x/sync v0.22.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260831171406-18b4a7587f8a
 	google.golang.org/protobuf v1.36.12
-)
-
-require (
-	github.com/andybalholm/brotli v1.2.3 // indirect
-	github.com/gofiber/fiber/v3 v3.5.0 // indirect
-	github.com/gofiber/schema v1.8.5 // indirect
-	github.com/gofiber/utils/v2 v2.4.3 // indirect
-	github.com/klauspost/compress v1.20.0 // indirect
-	github.com/mattn/go-colorable v0.1.15 // indirect
-	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/tinylib/msgp v1.6.4 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.73.0 // indirect
 )
 
 require (
@@ -77,7 +62,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.30.4 // indirect
-	github.com/go-sphere/httpx/fiberx v0.0.4
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect

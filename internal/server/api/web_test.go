@@ -39,7 +39,7 @@ func TestPasswordAuthenticationFlow(t *testing.T) {
 		HTTP: HTTPConfig{
 			Address: addr,
 		},
-	}, store, service)
+	}, store, service, nil)
 
 	startErr := make(chan error, 1)
 	go func() {

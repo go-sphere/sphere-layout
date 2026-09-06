@@ -1,28 +1,21 @@
 package httpsrv
 
 import (
-	"time"
-
-	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/httpx/ginx"
 	"github.com/go-sphere/sphere/log"
-	"github.com/go-sphere/sphere/log/zapx"
 	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/go-sphere/sphere/server/middleware/cors"
+	"github.com/go-sphere/sphere/server/middleware/logger"
 )
 
 // NewGinServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
-// Zap request logging is attached when the global logger backend is already a
-// *zapx.Backend (call log.InitWithBackends before Wire constructs the engine).
-func NewGinServer(name, addr string) httpx.Engine {
-	logger := log.With(log.WithAttrs(map[string]any{"module": name}), log.DisableCaller())
+// backend should be the process log backend so access logs and panic recovery
+// share the same sinks (console/file and the dash log API).
+func NewGinServer(name, addr string, backend log.Backend) httpx.Engine {
 	engine := gin.New()
-	if zapBackend, ok := logger.Backend().(*zapx.Backend); ok {
-		engine.Use(ginzap.Ginzap(zapBackend.ZapLogger(), time.RFC3339, true))
-		engine.Use(ginzap.RecoveryWithZap(zapBackend.ZapLogger(), true))
-	} else {
+	if backend == nil {
 		engine.Use(gin.Recovery())
 	}
 	app := ginx.New(
@@ -30,6 +23,10 @@ func NewGinServer(name, addr string) httpx.Engine {
 		ginx.WithServerAddr(addr),
 		ginx.WithHTTPXErrorHandler(httpz.AbortWithJsonError),
 	)
+	if backend != nil {
+		lg := log.NewLogger(backend.With(log.WithAttrs(map[string]any{"module": name}), log.DisableCaller()))
+		app.Use(logger.Log(lg), logger.RecoveryLog(lg, true))
+	}
 	return app
 }
 

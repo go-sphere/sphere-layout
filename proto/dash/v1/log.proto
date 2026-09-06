@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package dash.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "sphere/binding/binding.proto";
+
+service LogService {
+  // Tail streams a recent backfill followed by live log entries over SSE.
+  // Reconnect with the last stream_id and last_seq received.
+  rpc Tail(TailRequest) returns (stream TailResponse) {
+    option (google.api.http) = {get: "/api/logs/tail"};
+  }
+
+  // History pages backwards through entries still retained in memory.
+  rpc History(HistoryRequest) returns (HistoryResponse) {
+    option (google.api.http) = {get: "/api/logs/history"};
+  }
+}
+
+message LogEntry {
+  uint64 seq = 1;
+  google.protobuf.Timestamp time = 2;
+  string level = 3;
+  string name = 4;
+  string message = 5;
+  google.protobuf.Struct attrs = 6;
+}
+
+message TailRequest {
+  option (sphere.binding.default_location) = BINDING_LOCATION_QUERY;
+
+  // stream_id identifies the process instance that issued from_seq.
+  string stream_id = 1;
+  // from_seq is the last sequence number already received.
+  uint64 from_seq = 2;
+  // tail_limit controls the initial backfill when no valid cursor is supplied.
+  uint32 tail_limit = 3 [(buf.validate.field).uint32.lte = 2000];
+  // min_level is a threshold: debug, info, warn, or error.
+  string min_level = 4;
+}
+
+message TailResponse {
+  string stream_id = 1;
+  repeated LogEntry entries = 2;
+  uint64 last_seq = 3;
+  // truncated means the requested sequence has fallen out of the ring.
+  bool truncated = 4;
+  // reset means stream_id belonged to an earlier process instance.
+  bool reset = 5;
+  // dropped is the number of live entries dropped since the previous frame.
+  uint64 dropped = 6;
+}
+
+message HistoryRequest {
+  option (sphere.binding.default_location) = BINDING_LOCATION_QUERY;
+
+  // before_seq is exclusive; zero starts from the newest retained entry.
+  uint64 before_seq = 1;
+  uint32 limit = 2 [(buf.validate.field).uint32.lte = 2000];
+  string min_level = 3;
+}
+
+message HistoryResponse {
+  string stream_id = 1;
+  repeated LogEntry entries = 2;
+  bool more = 3;
+  uint64 latest_seq = 4;
+}

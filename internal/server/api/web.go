@@ -9,6 +9,7 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/pkg/httpsrv"
 	"github.com/go-sphere/sphere-layout/internal/service/api"
 	"github.com/go-sphere/sphere-layout/internal/service/shared"
+	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/server/auth/jwtauth"
 	"github.com/go-sphere/sphere/server/middleware/auth"
 	"github.com/go-sphere/sphere/storage"
@@ -21,10 +22,10 @@ type Web struct {
 	sharedSvc *shared.Service
 }
 
-func NewWebServer(conf Config, storage storage.CDNStorage, service *api.Service) *Web {
+func NewWebServer(conf Config, storage storage.CDNStorage, service *api.Service, logger log.Backend) *Web {
 	return &Web{
 		config:    conf,
-		engine:    httpsrv.NewGinServer("api", conf.HTTP.Address),
+		engine:    httpsrv.NewGinServer("api", conf.HTTP.Address, logger),
 		service:   service,
 		sharedSvc: shared.NewService(storage, "user"),
 	}
@@ -37,7 +38,7 @@ func (w *Web) Identifier() string {
 func (w *Web) Start(ctx context.Context) error {
 	jwtAuthorizer := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]](w.config.JWT)
 
-	authMiddleware := auth.NewAuthMiddleware[int64, jwtauth.RBACClaims[int64]](
+	authMiddleware := auth.NewAuthMiddleware(
 		jwtAuthorizer,
 		auth.WithHeaderLoader(auth.AuthorizationHeader),
 		auth.WithPrefixTransform(auth.AuthorizationPrefixBearer),

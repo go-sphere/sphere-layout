@@ -1,5 +1,5 @@
 # ---------- Makefile for Sphere Project ----------
-MODULE          := $(shell go list -m)
+MODULE          := $(shell GOWORK=off go list -m)
 MODULE_NAME     ?= $(lastword $(subst /, ,$(MODULE)))
 DIRECT_DEPS_TEMPLATE := {{if and (not .Main) (not .Indirect) (not .Replace)}}{{.Path}}{{end}}
 

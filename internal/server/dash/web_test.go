@@ -10,6 +10,9 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
@@ -18,6 +21,8 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
 	servicedash "github.com/go-sphere/sphere-layout/internal/service/dash"
 	"github.com/go-sphere/sphere/cache/memory"
+	"github.com/go-sphere/sphere/log"
+	"github.com/go-sphere/sphere/log/logbuffer"
 	"github.com/go-sphere/sphere/storage"
 	"github.com/go-sphere/sphere/utils/secure"
 )
@@ -32,7 +37,7 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 		baseURL, cleanup := setupTestWeb(t)
 		defer cleanup()
 
-		status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/login", map[string]string{
+		status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
 			"username": testAdminUsername,
 			"password": testAdminPassword,
 		}, nil)
@@ -40,9 +45,9 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 			t.Fatalf("expected status 200, got %d, body=%s", status, body)
 		}
 
-		token := parseLoginToken(t, body)
-		if token == "" {
-			t.Fatalf("expected non-empty accessToken, body=%s", body)
+		tokens := parseAuthTokens(t, body)
+		if tokens.AccessToken == "" || tokens.RefreshToken == "" {
+			t.Fatalf("expected non-empty access_token and refresh_token, body=%s", body)
 		}
 	})
 
@@ -50,7 +55,7 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 		baseURL, cleanup := setupTestWeb(t)
 		defer cleanup()
 
-		status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/login", map[string]string{
+		status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
 			"username": "wrong-user",
 			"password": "wrong-password",
 		}, nil)
@@ -59,24 +64,38 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 		}
 	})
 
-	t.Run("valid token should get admin list", func(t *testing.T) {
+	t.Run("refresh rotates tokens and bearer accesses admin list", func(t *testing.T) {
 		baseURL, cleanup := setupTestWeb(t)
 		defer cleanup()
 
-		loginStatus, loginBody := doJSONRequest(t, http.MethodPost, baseURL+"/api/login", map[string]string{
+		loginStatus, loginBody := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
 			"username": testAdminUsername,
 			"password": testAdminPassword,
 		}, nil)
 		if loginStatus != http.StatusOK {
 			t.Fatalf("login status = %d, want %d, body=%s", loginStatus, http.StatusOK, loginBody)
 		}
-		token := parseLoginToken(t, loginBody)
-		if token == "" {
-			t.Fatalf("expected login token, body=%s", loginBody)
+		tokens := parseAuthTokens(t, loginBody)
+		if tokens.AccessToken == "" || tokens.RefreshToken == "" {
+			t.Fatalf("expected login tokens, body=%s", loginBody)
+		}
+
+		refreshStatus, refreshBody := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/refresh", map[string]string{
+			"refresh_token": tokens.RefreshToken,
+		}, nil)
+		if refreshStatus != http.StatusOK {
+			t.Fatalf("refresh status = %d, want %d, body=%s", refreshStatus, http.StatusOK, refreshBody)
+		}
+		refreshed := parseAuthTokens(t, refreshBody)
+		if refreshed.AccessToken == "" || refreshed.RefreshToken == "" {
+			t.Fatalf("expected refreshed tokens, body=%s", refreshBody)
+		}
+		if refreshed.AccessToken == tokens.AccessToken || refreshed.RefreshToken == tokens.RefreshToken {
+			t.Fatalf("refresh did not rotate tokens, body=%s", refreshBody)
 		}
 
 		status, body := doJSONRequest(t, http.MethodGet, baseURL+"/api/admin/list", nil, map[string]string{
-			"Authorization": "Bearer " + token,
+			"Authorization": "Bearer " + refreshed.AccessToken,
 		})
 		if status != http.StatusOK {
 			t.Fatalf("expected status 200, got %d, body=%s", status, body)
@@ -85,6 +104,19 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 		count := parseAdminCount(t, body)
 		if count == 0 {
 			t.Fatalf("expected non-empty admin list, body=%s", body)
+		}
+	})
+
+	t.Run("legacy pure-admin login path is gone", func(t *testing.T) {
+		baseURL, cleanup := setupTestWeb(t)
+		defer cleanup()
+
+		status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/login", map[string]string{
+			"username": testAdminUsername,
+			"password": testAdminPassword,
+		}, nil)
+		if status == http.StatusOK {
+			t.Fatalf("legacy /api/login still succeeded, body=%s", body)
 		}
 	})
 
@@ -101,6 +133,113 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 	})
 }
 
+func TestWebLoginRefreshAndLogsTwice(t *testing.T) {
+	for i := range 2 {
+		t.Run(fmt.Sprintf("run-%d", i+1), func(t *testing.T) {
+			baseURL, cleanup := setupTestWeb(t)
+			defer cleanup()
+
+			status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
+				"username": testAdminUsername,
+				"password": testAdminPassword,
+			}, nil)
+			if status != http.StatusOK {
+				t.Fatalf("login status = %d, want 200, body=%s", status, body)
+			}
+			tokens := parseAuthTokens(t, body)
+			if tokens.AccessToken == "" || tokens.RefreshToken == "" {
+				t.Fatalf("login missing tokens, body=%s", body)
+			}
+			t.Logf("login access_token_len=%d refresh_token_len=%d expires_at=%d", len(tokens.AccessToken), len(tokens.RefreshToken), tokens.ExpiresAt)
+
+			refreshStatus, refreshBody := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/refresh", map[string]string{
+				"refresh_token": tokens.RefreshToken,
+			}, nil)
+			if refreshStatus != http.StatusOK {
+				t.Fatalf("refresh status = %d, want 200, body=%s", refreshStatus, refreshBody)
+			}
+			refreshed := parseAuthTokens(t, refreshBody)
+			if refreshed.AccessToken == "" || refreshed.RefreshToken == "" {
+				t.Fatalf("refresh missing tokens, body=%s", refreshBody)
+			}
+			if refreshed.AccessToken == tokens.AccessToken || refreshed.RefreshToken == tokens.RefreshToken {
+				t.Fatalf("refresh did not rotate tokens, body=%s", refreshBody)
+			}
+			t.Logf("refresh access_token_len=%d refresh_token_len=%d expires_at=%d", len(refreshed.AccessToken), len(refreshed.RefreshToken), refreshed.ExpiresAt)
+
+			logStatus, logBody := doJSONRequest(t, http.MethodGet, baseURL+"/api/logs/history?limit=20", nil, map[string]string{
+				"Authorization": "Bearer " + refreshed.AccessToken,
+			})
+			if logStatus != http.StatusOK {
+				t.Fatalf("logs status = %d, want 200, body=%s", logStatus, logBody)
+			}
+			t.Logf("log history body=%s", logBody)
+			if !strings.Contains(logBody, `"entries"`) || !strings.Contains(logBody, `"stream_id"`) {
+				t.Fatalf("log history body is not a sane JSON payload: %s", logBody)
+			}
+			if !strings.Contains(logBody, "dash web ready") {
+				t.Fatalf("log history missing seeded entry, body=%s", logBody)
+			}
+			if !strings.Contains(logBody, "/api/auth/login") {
+				t.Fatalf("log history missing gin access log, body=%s", logBody)
+			}
+		})
+	}
+}
+
+func TestDashPageIsServed(t *testing.T) {
+	baseURL, cleanup := setupTestWeb(t)
+	defer cleanup()
+
+	resp, err := http.Get(baseURL + "/dash/")
+	if err != nil {
+		t.Fatalf("GET /dash/: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("read /dash/: %v", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("GET /dash/ status = %d, want 200, body=%s", resp.StatusCode, raw)
+	}
+	page := string(raw)
+	if !strings.Contains(page, "vue@3") || !strings.Contains(page, "/api/auth/login") {
+		t.Fatalf("dash page missing Vue 3 login app, body=%s", page)
+	}
+}
+
+func TestDashSPAHeadlessScreenshot(t *testing.T) {
+	out := os.Getenv("DASH_SPA_SCREENSHOT")
+	if out == "" {
+		t.Skip("DASH_SPA_SCREENSHOT not set")
+	}
+	chrome := "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+	if _, err := os.Stat(chrome); err != nil {
+		t.Skip("chrome not available")
+	}
+	baseURL, cleanup := setupTestWeb(t)
+	defer cleanup()
+
+	cmd := exec.Command(chrome,
+		"--headless=new",
+		"--disable-gpu",
+		"--no-first-run",
+		"--window-size=1280,900",
+		"--virtual-time-budget=5000",
+		"--screenshot="+out,
+		baseURL+"/dash/",
+	)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("chrome screenshot failed: %v\n%s", err, output)
+	}
+	info, err := os.Stat(out)
+	if err != nil || info.Size() == 0 {
+		t.Fatalf("screenshot missing or empty: %v\n%s", err, output)
+	}
+}
+
 func setupTestWeb(t *testing.T) (string, func()) {
 	t.Helper()
 
@@ -108,19 +247,21 @@ func setupTestWeb(t *testing.T) (string, func()) {
 	db := newMemoryDB(t)
 	insertDefaultAdmin(t, db)
 
+	logs := logbuffer.New(32)
+	logs.Log(t.Context(), log.LevelInfo, "dash web ready")
 	testStorage := &noopStorage{}
-	service := servicedash.NewService(dao.NewDao(db), memory.NewByteCache(), testStorage)
+	service := servicedash.NewService(dao.NewDao(db), memory.NewByteCache(), testStorage, logs)
 	web := NewWebServer(Config{
 		AuthJWT:    "test-auth-jwt-secret",
 		RefreshJWT: "test-refresh-jwt-secret",
 		HTTP: HTTPConfig{
 			Address: addr,
 		},
-	}, testStorage, service)
+	}, testStorage, service, logs)
 
 	startErr := make(chan error, 1)
 	go func() {
-		startErr <- web.Start(context.Background())
+		startErr <- web.Start(t.Context())
 	}()
 
 	baseURL := "http://" + addr
@@ -153,12 +294,10 @@ func waitServerReady(t *testing.T, baseURL string, startErr <-chan error) {
 			t.Fatalf("web server start failed: %v", err)
 		default:
 		}
-		resp, err := httpClient.Get(baseURL + "/api/get-async-routes")
+		resp, err := httpClient.Get(baseURL + "/")
 		if err == nil {
 			_ = resp.Body.Close()
-			if resp.StatusCode == http.StatusOK {
-				return
-			}
+			return
 		}
 		time.Sleep(time.Millisecond * 50)
 	}
@@ -201,7 +340,7 @@ func insertDefaultAdmin(t *testing.T, db *ent.Client) {
 		SetUsername(testAdminUsername).
 		SetPassword(password).
 		SetRoles([]string{"all"}).
-		Save(context.Background())
+		Save(t.Context())
 	if err != nil {
 		t.Fatalf("insert admin failed: %v", err)
 	}
@@ -219,7 +358,7 @@ func doJSONRequest(t *testing.T, method, target string, payload any, headers map
 		body = bytes.NewBuffer(raw)
 	}
 
-	req, err := http.NewRequest(method, target, body)
+	req, err := http.NewRequestWithContext(t.Context(), method, target, body)
 	if err != nil {
 		t.Fatalf("create request failed: %v", err)
 	}
@@ -243,18 +382,25 @@ func doJSONRequest(t *testing.T, method, target string, payload any, headers map
 	return resp.StatusCode, string(raw)
 }
 
-func parseLoginToken(t *testing.T, body string) string {
+type authTokenData struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresAt    int64  `json:"expires_at"`
+}
+
+func parseAuthTokens(t *testing.T, body string) authTokenData {
 	t.Helper()
 
 	var resp struct {
-		Data struct {
-			AccessToken string `json:"accessToken"`
-		} `json:"data"`
+		Data authTokenData `json:"data"`
 	}
 	if err := json.Unmarshal([]byte(body), &resp); err != nil {
-		t.Fatalf("decode login response: %v, body=%s", err, body)
+		t.Fatalf("decode auth response: %v, body=%s", err, body)
 	}
-	return resp.Data.AccessToken
+	if strings.Contains(body, `"accessToken"`) || strings.Contains(body, `"refreshToken"`) {
+		t.Fatalf("auth response still uses camelCase token fields, body=%s", body)
+	}
+	return resp.Data
 }
 
 func parseAdminCount(t *testing.T, body string) int {

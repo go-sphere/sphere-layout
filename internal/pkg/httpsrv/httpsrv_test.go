@@ -5,15 +5,15 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/go-sphere/httpx"
+	"github.com/go-sphere/sphere/log"
+	"github.com/go-sphere/sphere/log/logbuffer"
 )
 
 // registerAcceptanceRoutes is the shared route set used to prove that the gin
-// and fiber engines are interchangeable, including the error path that used
-// to require the framework-specific jsonErrorContext hack.
+// engine serves JSON success and error responses through the httpx handler.
 func registerAcceptanceRoutes(r httpx.Router) {
 	r.GET("/ping", httpx.WithJson(func(ctx httpx.Context) (string, error) {
 		return "pong", nil
@@ -50,49 +50,88 @@ func doRequest(t *testing.T, engine httpx.Engine, target string) (int, map[strin
 	return resp.StatusCode, payload
 }
 
-// TestGinAndFiberServeSameRoutes is the acceptance check for the shared
-// httpx error handler: the same route set (including sphere's JSON error
-// rendering) must behave identically on the gin- and fiber-backed engines.
-func TestGinAndFiberServeSameRoutes(t *testing.T) {
-	engines := map[string]httpx.Engine{
-		"gin":   NewGinServer("test", "127.0.0.1:0"),
-		"fiber": NewFiberServer("test", "127.0.0.1:0"),
+func TestGinServesJSONRoutes(t *testing.T) {
+	engine := NewGinServer("test", "127.0.0.1:0", nil)
+	registerAcceptanceRoutes(engine.Group(""))
+
+	status, payload := doRequest(t, engine, "http://example.com/ping")
+	if status != http.StatusOK {
+		t.Fatalf("/ping status = %d, want 200", status)
 	}
-	type result struct {
-		status  int
-		payload map[string]any
-	}
-	targets := []string{
-		"http://example.com/ping",
-		"http://example.com/boom",
-		"http://example.com/users/42",
-	}
-	results := make(map[string]map[string]result)
-	for name, engine := range engines {
-		registerAcceptanceRoutes(engine.Group(""))
-		results[name] = make(map[string]result)
-		for _, target := range targets {
-			status, payload := doRequest(t, engine, target)
-			results[name][target] = result{status: status, payload: payload}
-		}
+	if payload["data"] != "pong" {
+		t.Fatalf("/ping payload = %v, want pong", payload)
 	}
 
-	for _, target := range targets {
-		gin := results["gin"][target]
-		fiber := results["fiber"][target]
-		if gin.status != fiber.status {
-			t.Fatalf("%s status mismatch: gin=%d fiber=%d", target, gin.status, fiber.status)
-		}
-		if !reflect.DeepEqual(gin.payload, fiber.payload) {
-			t.Fatalf("%s payload mismatch:\n gin=%v\n fiber=%v", target, gin.payload, fiber.payload)
-		}
+	status, payload = doRequest(t, engine, "http://example.com/users/42")
+	if status != http.StatusOK {
+		t.Fatalf("/users/:id status = %d, want 200", status)
+	}
+	data, _ := payload["data"].(map[string]any)
+	if data["id"] != "42" {
+		t.Fatalf("/users/:id payload = %v, want id=42", payload)
 	}
 
-	boom := results["gin"]["http://example.com/boom"]
-	if boom.status != http.StatusNotFound {
-		t.Fatalf("error route status = %d, want 404", boom.status)
+	status, payload = doRequest(t, engine, "http://example.com/boom")
+	if status != http.StatusNotFound {
+		t.Fatalf("error route status = %d, want 404", status)
 	}
-	if boom.payload["success"] != false || boom.payload["message"] != "resource missing" {
-		t.Fatalf("error route payload = %v, want sphere error shape", boom.payload)
+	if payload["success"] != false || payload["message"] != "resource missing" {
+		t.Fatalf("error route payload = %v, want sphere error shape", payload)
+	}
+}
+
+func TestGinAccessLogsGoToLogBuffer(t *testing.T) {
+	buf := logbuffer.New(32)
+	engine := NewGinServer("test", "127.0.0.1:0", buf)
+	registerAcceptanceRoutes(engine.Group(""))
+
+	status, _ := doRequest(t, engine, "http://example.com/ping")
+	if status != http.StatusOK {
+		t.Fatalf("/ping status = %d, want 200", status)
+	}
+
+	entries, _ := buf.History(0, 8, log.LevelDebug)
+	found := false
+	for _, entry := range entries {
+		if entry.Message == "/ping" && entry.Attrs["method"] == "GET" && entry.Attrs["status"] == int64(200) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("gin access log missing from buffer: %+v", entries)
+	}
+}
+
+func TestGinPanicIsRecovered(t *testing.T) {
+	buf := logbuffer.New(32)
+	engine := NewGinServer("test", "127.0.0.1:0", buf)
+	engine.Group("").GET("/panic", func(httpx.Context) error {
+		panic("boom from handler")
+	})
+
+	tr, ok := httpx.AsTestRequester(engine)
+	if !ok {
+		t.Fatalf("engine %T does not support in-process test requests", engine)
+	}
+	resp, err := tr.Do(httptest.NewRequest(http.MethodGet, "http://example.com/panic", nil))
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want 500", resp.StatusCode)
+	}
+
+	entries, _ := buf.History(0, 8, log.LevelDebug)
+	found := false
+	for _, entry := range entries {
+		if entry.Level == "error" && entry.Message == "[Recovery from panic]" && entry.Attrs["error"] == "boom from handler" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("panic recovery log missing from buffer: %+v", entries)
 	}
 }

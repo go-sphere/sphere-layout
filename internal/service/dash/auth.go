@@ -18,7 +18,6 @@ var _ dashv1.AuthServiceHTTPServer = (*Service)(nil)
 const (
 	AuthTokenValidDuration    = time.Hour
 	RefreshTokenValidDuration = time.Hour * 24
-	AuthExpiresTimeFormat     = "2006/01/02 15:04:05"
 )
 
 const (
@@ -30,7 +29,7 @@ type AdminToken struct {
 	Admin        *ent.Admin
 	AccessToken  string
 	RefreshToken string
-	Expires      string
+	ExpiresAt    int64
 }
 
 type Session struct {
@@ -45,6 +44,7 @@ func (s *Service) createAdminToken(ctx context.Context, client *ent.Client, admi
 	}
 
 	authClaims := jwtauth.NewRBACClaims(administrator.ID, administrator.Username, administrator.Roles, time.Now().Add(AuthTokenValidDuration))
+	authClaims.ID = newUUID.String()
 	token, err := s.authorizer.GenerateToken(ctx, authClaims)
 	if err != nil {
 		return nil, err
@@ -72,16 +72,21 @@ func (s *Service) createAdminToken(ctx context.Context, client *ent.Client, admi
 		return nil, err
 	}
 
+	var expiresAt int64
+	if authClaims.ExpiresAt != nil {
+		expiresAt = authClaims.ExpiresAt.Unix()
+	}
+
 	return &AdminToken{
 		Admin:        administrator,
 		AccessToken:  token,
 		RefreshToken: refresh,
-		Expires:      authClaims.ExpiresAt.Format(AuthExpiresTimeFormat),
+		ExpiresAt:    expiresAt,
 	}, nil
 }
 
 func (s *Service) LoginWithPassword(ctx context.Context, request *dashv1.LoginWithPasswordRequest) (*dashv1.LoginWithPasswordResponse, error) {
-	token, err := dao.WithTx[AdminToken](ctx, s.db.Client, func(ctx context.Context, client *ent.Client) (*AdminToken, error) {
+	token, err := dao.WithTx(ctx, s.db.Client, func(ctx context.Context, client *ent.Client) (*AdminToken, error) {
 		administrator, err := client.Admin.Query().Where(admin.UsernameEqualFold(request.Username)).Only(ctx)
 		if err != nil {
 			return nil, dashv1.AuthError_AUTH_ERROR_INVALID_CREDENTIALS // 隐藏错误信息
@@ -95,17 +100,14 @@ func (s *Service) LoginWithPassword(ctx context.Context, request *dashv1.LoginWi
 		return nil, err
 	}
 	return &dashv1.LoginWithPasswordResponse{
-		Avatar:       s.storage.GenerateURL(token.Admin.Avatar),
-		Username:     token.Admin.Username,
-		Roles:        token.Admin.Roles,
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
-		Expires:      token.Expires,
+		ExpiresAt:    token.ExpiresAt,
 	}, nil
 }
 
 func (s *Service) RefreshToken(ctx context.Context, request *dashv1.RefreshTokenRequest) (*dashv1.RefreshTokenResponse, error) {
-	token, err := dao.WithTx[AdminToken](ctx, s.db.Client, func(ctx context.Context, client *ent.Client) (*AdminToken, error) {
+	token, err := dao.WithTx(ctx, s.db.Client, func(ctx context.Context, client *ent.Client) (*AdminToken, error) {
 		claims, err := s.authRefresher.ParseToken(ctx, request.RefreshToken)
 		if err != nil {
 			return nil, err
@@ -141,6 +143,6 @@ func (s *Service) RefreshToken(ctx context.Context, request *dashv1.RefreshToken
 	return &dashv1.RefreshTokenResponse{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
-		Expires:      token.Expires,
+		ExpiresAt:    token.ExpiresAt,
 	}, nil
 }

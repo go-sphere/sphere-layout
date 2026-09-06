@@ -163,4 +163,6 @@ fabric.properties
 /var/
 /api/
 /config.json
-/config_gen.jsongo.work.sum
+/config_gen.json
+go.work.sum
+/code_review
