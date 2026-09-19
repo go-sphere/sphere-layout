@@ -16,6 +16,7 @@ func TestDashSPAIsVue3LoginRefreshLogsPage(t *testing.T) {
 		"Vue.createApp",
 		"/api/auth/login",
 		"/api/auth/refresh",
+		"/api/auth/logout",
 		"/api/logs/history",
 		"/api/logs/tail",
 		"Authorization",

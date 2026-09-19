@@ -202,8 +202,22 @@
             };
             this.scheduleRefresh();
           },
-          logout: function () {
+          logout: async function () {
             this.clearTimers();
+            try {
+              // The auth cookie is HttpOnly, so only the server can delete it — and
+              // it outlives this page's in-memory session. Sent even when no session
+              // is cached: an empty refresh_token is valid input and still clears it.
+              await fetch(this.apiURL("/api/auth/logout"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  refresh_token: this.session ? this.session.refreshToken : ""
+                })
+              });
+            } catch (err) {
+              this.error = err && err.message ? err.message : String(err);
+            }
             this.session = null;
             this.logs = [];
           },

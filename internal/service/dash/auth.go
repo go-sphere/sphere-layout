@@ -137,6 +137,33 @@ func (s *Service) LoginWithPassword(ctx context.Context, request *dashv1.LoginWi
 	}, nil
 }
 
+// Logout makes the browser credential actually go away: it deletes the auth
+// cookie and revokes the refresh session the request names.
+//
+// The cookie is HttpOnly, so the server deleting it is the only way it can be
+// deleted — a client-side "logout" that just forgets about the token leaves a
+// valid credential in the browser for the rest of its lifetime. The access
+// token is a stateless JWT and cannot be revoked early; deleting the cookie
+// (the only copy the browser holds) is what makes this endpoint meaningful.
+//
+// Idempotent, and deliberately tolerant of a missing refresh token: an empty or
+// unparsable token is a normal input (a client that lost its token but still
+// holds the cookie must be able to clear it), and a session row that is already
+// gone counts as logged out.
+func (s *Service) Logout(ctx context.Context, request *dashv1.LogoutRequest) (*dashv1.LogoutResponse, error) {
+	// Clear the cookie before anything that can fail. Deleting it is the point
+	// of the call, and every later step here is best-effort.
+	setAuthCookie(ctx, "", -1)
+	claims, err := s.authRefresher.ParseToken(ctx, request.RefreshToken)
+	if err != nil {
+		return &dashv1.LogoutResponse{}, nil
+	}
+	if err := s.db.AdminSession.UpdateOneID(claims.UID).SetIsRevoked(true).Exec(ctx); err != nil && !ent.IsNotFound(err) {
+		return nil, err
+	}
+	return &dashv1.LogoutResponse{}, nil
+}
+
 func (s *Service) RefreshToken(ctx context.Context, request *dashv1.RefreshTokenRequest) (*dashv1.RefreshTokenResponse, error) {
 	token, err := dao.WithTx(ctx, s.db.Client, func(ctx context.Context, client *ent.Client) (*AdminToken, error) {
 		claims, err := s.authRefresher.ParseToken(ctx, request.RefreshToken)

@@ -41,6 +41,7 @@
     "mixed": [
       "Makefile",
       "go.mod",
+      "assets/dash/**",
       "cmd/app/builder.go",
       "cmd/app/main.go",
       "cmd/app/wire.go",
@@ -51,8 +52,10 @@
       "internal/pkg/database/schema/**",
       "internal/pkg/auth/**",
       "internal/service/api/auth.go",
+      "internal/service/dash/auth.go",
       "proto/api/v1/auth.proto",
       "proto/api/v1/user.proto",
+      "proto/dash/v1/auth.proto",
       "proto/shared/v1/user.proto"
     ],
     "generated": [

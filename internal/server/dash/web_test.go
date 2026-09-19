@@ -161,12 +161,7 @@ func TestWebAuthCookie(t *testing.T) {
 	}
 	tokens := parseAuthTokens(t, body)
 
-	var authCookie *http.Cookie
-	for _, cookie := range (&http.Response{Header: header}).Cookies() {
-		if cookie.Name == servicedash.AuthTokenCookieName {
-			authCookie = cookie
-		}
-	}
+	authCookie := authCookieFromHeader(header)
 	if authCookie == nil {
 		t.Fatalf("login response missing %s cookie, headers=%v", servicedash.AuthTokenCookieName, header)
 	}
@@ -223,15 +218,100 @@ func TestWebAuthCookie(t *testing.T) {
 	if status != http.StatusOK {
 		t.Fatalf("https login status = %d, want 200, body=%s", status, body)
 	}
-	var secureCookie *http.Cookie
-	for _, cookie := range (&http.Response{Header: header}).Cookies() {
-		if cookie.Name == servicedash.AuthTokenCookieName {
-			secureCookie = cookie
-		}
-	}
+	secureCookie := authCookieFromHeader(header)
 	if secureCookie == nil || !secureCookie.Secure {
 		t.Fatalf("cookie behind X-Forwarded-Proto=https is not Secure, cookie=%+v", secureCookie)
 	}
+}
+
+// TestWebLogoutClearsAuthCookie covers what makes logout real: the auth cookie
+// is HttpOnly, so the browser can only lose it via this response, and a client
+// that lost its refresh token but still holds the cookie must be able to call
+// it too. Both inputs therefore have to reach the handler — validation that
+// rejects an empty refresh_token turns the call into a no-op and leaves a live
+// credential in the browser.
+func TestWebLogoutClearsAuthCookie(t *testing.T) {
+	baseURL, cleanup := setupTestWeb(t)
+	defer cleanup()
+
+	base, err := url.Parse(baseURL)
+	if err != nil {
+		t.Fatalf("parse base url failed: %v", err)
+	}
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatalf("new cookie jar failed: %v", err)
+	}
+	client := &http.Client{Timeout: time.Second * 5, Jar: jar}
+
+	status, _, body := doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
+		"username": testAdminUsername,
+		"password": testAdminPassword,
+	}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("login status = %d, want 200, body=%s", status, body)
+	}
+	tokens := parseAuthTokens(t, body)
+
+	status, _, body = doJSONRequestWithClient(t, client, http.MethodGet, baseURL+"/api/admin/list", nil, nil)
+	if status != http.StatusOK {
+		t.Fatalf("cookie-authenticated admin list status = %d, want 200, body=%s", status, body)
+	}
+
+	status, header, body := doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/logout", map[string]string{
+		"refresh_token": tokens.RefreshToken,
+	}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("logout status = %d, want 200, body=%s", status, body)
+	}
+	if cleared := authCookieFromHeader(header); cleared == nil || cleared.Value != "" || cleared.MaxAge > 0 {
+		t.Fatalf("logout did not clear the auth cookie, cookie=%+v", cleared)
+	}
+	for _, cookie := range jar.Cookies(base) {
+		if cookie.Name == servicedash.AuthTokenCookieName {
+			t.Fatalf("auth cookie survived logout: %+v", cookie)
+		}
+	}
+	status, _, body = doJSONRequestWithClient(t, client, http.MethodGet, baseURL+"/api/admin/list", nil, nil)
+	if status != http.StatusUnauthorized {
+		t.Fatalf("post-logout admin list status = %d, want 401, body=%s", status, body)
+	}
+
+	// Logout revokes the refresh session as well, so the token handed in above
+	// cannot mint another access token (403 ADMIN_SESSION_ERROR_REVOKED).
+	status, _, body = doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/refresh", map[string]string{
+		"refresh_token": tokens.RefreshToken,
+	}, nil)
+	if status != http.StatusForbidden {
+		t.Fatalf("refresh after logout status = %d, want 403, body=%s", status, body)
+	}
+
+	// No refresh token at all: the cookie still has to go.
+	status, _, body = doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
+		"username": testAdminUsername,
+		"password": testAdminPassword,
+	}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("re-login status = %d, want 200, body=%s", status, body)
+	}
+	status, header, body = doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/logout", map[string]string{}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("token-less logout status = %d, want 200, body=%s", status, body)
+	}
+	if cleared := authCookieFromHeader(header); cleared == nil || cleared.Value != "" || cleared.MaxAge > 0 {
+		t.Fatalf("token-less logout did not clear the auth cookie, cookie=%+v", cleared)
+	}
+}
+
+// authCookieFromHeader returns the auth_token cookie a response sets, cleared or
+// not, so callers can assert on its value and attributes.
+func authCookieFromHeader(header http.Header) *http.Cookie {
+	for _, cookie := range (&http.Response{Header: header}).Cookies() {
+		if cookie.Name == servicedash.AuthTokenCookieName {
+			return cookie
+		}
+	}
+	return nil
 }
 
 func TestWebLoginRefreshAndLogsTwice(t *testing.T) {

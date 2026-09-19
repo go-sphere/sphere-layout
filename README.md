@@ -115,12 +115,16 @@ with `github.com/go-sphere/sphere` v0.0.6. The Gin adapter is gone.
   registered on the engine so they also cover paths no route matched.
 - Dashboard authentication prefers the `Authorization` header and falls back to
   the auth cookie written at login/refresh, for browser requests that cannot set
-  headers.
+  headers. The cookie is HttpOnly, so only the server can delete it:
+  `POST /api/auth/logout` clears it and revokes the refresh session. See
+  `AGENTS.md` § Session cookie for the traps around that.
 
 A project generated from an earlier revision should merge
 `internal/pkg/httpsrv/**`, `internal/server/*/web.go`, the dashboard session and
-auth seams, and the regenerated `api/**` outputs at its next layout sync, then
-run `make gen/all` and `make check`.
+auth seams (`proto/dash/v1/auth.proto`, `internal/service/dash/auth.go`, and the
+embedded `assets/dash` page, which now posts to `/api/auth/logout`), and the
+regenerated `api/**` outputs at its next layout sync, then run `make gen/all`
+and `make check`.
 
 ## Replaceable Defaults
 
