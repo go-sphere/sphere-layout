@@ -13,18 +13,19 @@ import (
 	"github.com/go-sphere/httpx"
 	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/log/logbuffer"
+	"github.com/go-sphere/sphere/server/httpz"
 )
 
-// registerAcceptanceRoutes is the shared route set used to prove that the gin
+// registerAcceptanceRoutes is the shared route set used to prove that the
 // engine serves JSON success and error responses through the httpx handler.
 func registerAcceptanceRoutes(r httpx.Router) {
-	r.GET("/ping", httpx.WithJson(func(ctx httpx.Context) (string, error) {
+	r.GET("/ping", httpz.WithJson(func(ctx httpx.Context) (string, error) {
 		return "pong", nil
 	}))
 	r.GET("/boom", func(ctx httpx.Context) error {
 		return httpx.NewNotFoundError("resource missing")
 	})
-	r.GET("/users/:id", httpx.WithJson(func(ctx httpx.Context) (map[string]string, error) {
+	r.GET("/users/:id", httpz.WithJson(func(ctx httpx.Context) (map[string]string, error) {
 		return map[string]string{"id": ctx.Param("id")}, nil
 	}))
 }
@@ -53,8 +54,8 @@ func doRequest(t *testing.T, engine httpx.Engine, target string) (int, map[strin
 	return resp.StatusCode, payload
 }
 
-func TestGinServesJSONRoutes(t *testing.T) {
-	engine := NewGinServer("test", "127.0.0.1:0", nil)
+func TestServerServesJSONRoutes(t *testing.T) {
+	engine := NewServer("test", "127.0.0.1:0", nil)
 	registerAcceptanceRoutes(engine.Group(""))
 
 	status, payload := doRequest(t, engine, "http://example.com/ping")
@@ -83,9 +84,9 @@ func TestGinServesJSONRoutes(t *testing.T) {
 	}
 }
 
-func TestGinAccessLogsGoToLogBuffer(t *testing.T) {
+func TestServerAccessLogsGoToLogBuffer(t *testing.T) {
 	buf := logbuffer.New(32)
-	engine := NewGinServer("test", "127.0.0.1:0", buf)
+	engine := NewServer("test", "127.0.0.1:0", buf)
 	registerAcceptanceRoutes(engine.Group(""))
 
 	status, _ := doRequest(t, engine, "http://example.com/ping")
@@ -102,13 +103,13 @@ func TestGinAccessLogsGoToLogBuffer(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Fatalf("gin access log missing from buffer: %+v", entries)
+		t.Fatalf("access log missing from buffer: %+v", entries)
 	}
 }
 
-func TestGinPanicIsRecovered(t *testing.T) {
+func TestServerPanicIsRecovered(t *testing.T) {
 	buf := logbuffer.New(32)
-	engine := NewGinServer("test", "127.0.0.1:0", buf)
+	engine := NewServer("test", "127.0.0.1:0", buf)
 	engine.Group("").GET("/panic", func(httpx.Context) error {
 		panic("boom from handler")
 	})
@@ -148,7 +149,7 @@ func TestServerStopForceClosesHungRequest(t *testing.T) {
 	_ = ln.Close()
 
 	started := make(chan struct{})
-	engine := NewGinServer("test", addr, nil)
+	engine := NewServer("test", addr, nil)
 	engine.Group("").POST("/hang", func(ctx httpx.Context) error {
 		close(started)
 		<-ctx.Context().Done()

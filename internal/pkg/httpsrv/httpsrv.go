@@ -1,14 +1,11 @@
 package httpsrv
 
 import (
-	"context"
-	"errors"
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-sphere/httpx"
-	"github.com/go-sphere/httpx/ginx"
+	"github.com/go-sphere/httpx/stdx"
 	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/server/httpz"
 	"github.com/go-sphere/sphere/server/middleware/cors"
@@ -17,58 +14,44 @@ import (
 
 const readHeaderTimeout = 10 * time.Second
 
-var errNoTestRequester = errors.New("httpsrv: wrapped engine does not support in-process requests")
-
-// Server is an httpx.Engine that owns the net/http.Server so Stop can use
-// httpz.StopServer (Shutdown, then Close if the context expires) without
-// changing httpx adapters.
-type Server struct {
-	httpx.Engine
-	httpServer *http.Server
-}
-
-// NewGinServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
+// NewServer initializes and returns a new HTTP server engine configured with the specified address and middlewares.
 // backend should be the process log backend so access logs and panic recovery
 // share the same sinks (console/file and the dash log API).
-func NewGinServer(name, addr string, backend log.Backend) httpx.Engine {
-	engine := gin.New()
-	if backend == nil {
-		engine.Use(gin.Recovery())
-	}
+//
+// The engine is the stdx adapter over plain net/http: it owns the
+// *http.Server, installs itself as its Handler, and implements
+// httpx.TestRequester directly, so no wrapper is needed for in-process tests
+// or for Stop. Engine.Stop drains with Shutdown and force-closes when the
+// caller's context expires (httpx.Close, the same sequence httpz.StopServer
+// performs).
+func NewServer(name, addr string, backend log.Backend) httpx.Engine {
 	httpServer := &http.Server{
 		Addr:              addr,
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
-	app := ginx.New(
-		ginx.WithEngine(engine),
-		ginx.WithServer(httpServer),
-		ginx.WithHTTPXErrorHandler(httpz.AbortWithJsonError),
+	engine := stdx.New(
+		stdx.WithServer(httpServer),
+		stdx.WithErrorHandler(httpz.AbortWithJsonError),
 	)
 	if backend != nil {
 		lg := log.NewLogger(backend.With(log.WithAttrs(map[string]any{"module": name}), log.DisableCaller()))
-		app.Use(logger.Log(lg), logger.RecoveryLog(lg, true))
+		// Engine scope rather than a group's: engine middleware also covers the
+		// paths no route matched, and the access log and panic recovery must
+		// cover 404s too.
+		engine.Use(logger.Log(lg), logger.RecoveryLog(lg, true))
+	} else {
+		// Without a log backend a panicking handler still has to produce a
+		// response: net/http would otherwise drop the connection instead of
+		// answering 500, which is what the gin.Recovery() this replaced did.
+		// Stdio is the closest equivalent of gin's default writer.
+		engine.Use(logger.RecoveryLog(log.NewLogger(log.NewStdioBackend()), false))
 	}
-	return &Server{Engine: app, httpServer: httpServer}
+	return engine
 }
 
-// Stop shuts down the listener with httpz.StopServer, then marks the
-// adapter closed so a later Start returns httpx.ErrEngineClosed.
-func (s *Server) Stop(ctx context.Context) error {
-	err := httpz.StopServer(ctx, s.httpServer)
-	_ = s.Engine.Stop(context.Background())
-	return err
-}
-
-// Do forwards in-process test requests to the wrapped engine.
-func (s *Server) Do(req *http.Request) (*http.Response, error) {
-	tr, ok := httpx.AsTestRequester(s.Engine)
-	if !ok {
-		return nil, errNoTestRequester
-	}
-	return tr.Do(req)
-}
-
-// UseCORS attaches CORS middleware when origins is non-empty.
+// UseCORS attaches CORS middleware when origins is non-empty. Like the access
+// log it is registered on the engine: a preflight for an unmatched path still
+// needs the headers.
 func UseCORS(engine httpx.Engine, origins []string) error {
 	if len(origins) == 0 {
 		return nil

@@ -1,6 +1,7 @@
 package dash
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"os/exec"
@@ -133,6 +135,105 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 	})
 }
 
+// TestWebAuthCookie covers the browser auth path: login and refresh write the
+// auth_token cookie and the auth middleware accepts it on requests that carry
+// no Authorization header (page loads, <img>, EventSource).
+func TestWebAuthCookie(t *testing.T) {
+	baseURL, cleanup := setupTestWeb(t)
+	defer cleanup()
+
+	base, err := url.Parse(baseURL)
+	if err != nil {
+		t.Fatalf("parse base url failed: %v", err)
+	}
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatalf("new cookie jar failed: %v", err)
+	}
+	client := &http.Client{Timeout: time.Second * 5, Jar: jar}
+
+	status, header, body := doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
+		"username": testAdminUsername,
+		"password": testAdminPassword,
+	}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("login status = %d, want 200, body=%s", status, body)
+	}
+	tokens := parseAuthTokens(t, body)
+
+	var authCookie *http.Cookie
+	for _, cookie := range (&http.Response{Header: header}).Cookies() {
+		if cookie.Name == servicedash.AuthTokenCookieName {
+			authCookie = cookie
+		}
+	}
+	if authCookie == nil {
+		t.Fatalf("login response missing %s cookie, headers=%v", servicedash.AuthTokenCookieName, header)
+	}
+	if authCookie.Value != tokens.AccessToken {
+		t.Fatalf("cookie value does not match the access token, value_len=%d token_len=%d", len(authCookie.Value), len(tokens.AccessToken))
+	}
+	maxAge := int(servicedash.AuthTokenValidDuration.Seconds())
+	if authCookie.Path != "/" || authCookie.MaxAge != maxAge || authCookie.SameSite != http.SameSiteLaxMode || !authCookie.HttpOnly || authCookie.Secure {
+		t.Fatalf("cookie attrs = path %q max-age %d samesite %v http-only %v secure %v, want /, %d, Lax, true, false",
+			authCookie.Path, authCookie.MaxAge, authCookie.SameSite, authCookie.HttpOnly, authCookie.Secure, maxAge)
+	}
+
+	// The jar replays the cookie; these requests send no Authorization header.
+	status, _, body = doJSONRequestWithClient(t, client, http.MethodGet, baseURL+"/api/admin/list", nil, nil)
+	if status != http.StatusOK {
+		t.Fatalf("cookie-authenticated admin list status = %d, want 200, body=%s", status, body)
+	}
+
+	// Refresh rotates the access token and must rotate the cookie with it.
+	status, _, body = doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/refresh", map[string]string{
+		"refresh_token": tokens.RefreshToken,
+	}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("refresh status = %d, want 200, body=%s", status, body)
+	}
+	refreshed := parseAuthTokens(t, body)
+	var rotated string
+	for _, cookie := range jar.Cookies(base) {
+		if cookie.Name == servicedash.AuthTokenCookieName {
+			rotated = cookie.Value
+		}
+	}
+	if rotated != refreshed.AccessToken {
+		t.Fatalf("refresh did not rotate the auth cookie, value_len=%d token_len=%d", len(rotated), len(refreshed.AccessToken))
+	}
+
+	// A bogus cookie must not authenticate, mirroring the invalid-Bearer case.
+	badJar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatalf("new cookie jar failed: %v", err)
+	}
+	badJar.SetCookies(base, []*http.Cookie{{Name: servicedash.AuthTokenCookieName, Value: "not-a-jwt", Path: "/"}})
+	status, _, body = doJSONRequestWithClient(t, &http.Client{Timeout: time.Second * 5, Jar: badJar}, http.MethodGet, baseURL+"/api/admin/list", nil, nil)
+	if status != http.StatusUnauthorized {
+		t.Fatalf("invalid cookie status = %d, want 401, body=%s", status, body)
+	}
+
+	// Behind a TLS-terminating proxy the cookie must be marked Secure; the
+	// template serves plain HTTP, so the scheme comes from the proxy header.
+	status, header, body = doJSONRequestWithClient(t, client, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
+		"username": testAdminUsername,
+		"password": testAdminPassword,
+	}, map[string]string{"X-Forwarded-Proto": "https"})
+	if status != http.StatusOK {
+		t.Fatalf("https login status = %d, want 200, body=%s", status, body)
+	}
+	var secureCookie *http.Cookie
+	for _, cookie := range (&http.Response{Header: header}).Cookies() {
+		if cookie.Name == servicedash.AuthTokenCookieName {
+			secureCookie = cookie
+		}
+	}
+	if secureCookie == nil || !secureCookie.Secure {
+		t.Fatalf("cookie behind X-Forwarded-Proto=https is not Secure, cookie=%+v", secureCookie)
+	}
+}
+
 func TestWebLoginRefreshAndLogsTwice(t *testing.T) {
 	for i := range 2 {
 		t.Run(fmt.Sprintf("run-%d", i+1), func(t *testing.T) {
@@ -181,9 +282,100 @@ func TestWebLoginRefreshAndLogsTwice(t *testing.T) {
 				t.Fatalf("log history missing seeded entry, body=%s", logBody)
 			}
 			if !strings.Contains(logBody, "/api/auth/login") {
-				t.Fatalf("log history missing gin access log, body=%s", logBody)
+				t.Fatalf("log history missing access log entry, body=%s", logBody)
 			}
 		})
+	}
+}
+
+// TestWebLogTailStreamsOverSSE pins the one response shape that depends on
+// adapter-specific write plumbing: the dash log tail is the only SSE endpoint,
+// and streaming needs httpx.Streamer (net/http flushing on stdx, where the
+// engine itself owns the ResponseWriter). It also pins the lazy-commit
+// contract: the subscription's first frame is what commits the response, so a
+// client sees a 200 text/event-stream and then live entries.
+func TestWebLogTailStreamsOverSSE(t *testing.T) {
+	baseURL, cleanup := setupTestWeb(t)
+	defer cleanup()
+
+	status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/login", map[string]string{
+		"username": testAdminUsername,
+		"password": testAdminPassword,
+	}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("login status = %d, want 200, body=%s", status, body)
+	}
+	token := parseAuthTokens(t, body).AccessToken
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/api/logs/tail?tail_limit=50", nil)
+	if err != nil {
+		t.Fatalf("new tail request: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "text/event-stream")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("open tail stream: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		raw, _ := io.ReadAll(resp.Body)
+		t.Fatalf("tail status = %d, want 200, body=%s", resp.StatusCode, raw)
+	}
+	if ct := resp.Header.Get("Content-Type"); !strings.HasPrefix(ct, "text/event-stream") {
+		t.Fatalf("Content-Type = %q, want text/event-stream", ct)
+	}
+
+	frames := make(chan string, 16)
+	go func() {
+		defer close(frames)
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
+			if data, ok := strings.CutPrefix(scanner.Text(), "data: "); ok {
+				frames <- data
+			}
+		}
+	}()
+
+	// Backfill is non-empty here ("dash web ready" plus the login access log),
+	// so the first frame carries it; an empty buffer would send a cursor frame
+	// instead. Either way the frame commits the lazy response.
+	select {
+	case frame, ok := <-frames:
+		if !ok {
+			t.Fatal("stream closed before the first frame")
+		}
+		if !strings.Contains(frame, `"stream_id"`) {
+			t.Fatalf("first frame = %s, want a cursor or backfill frame", frame)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("no frame arrived within 5s")
+	}
+
+	// The access log writes to the same buffer this subscription reads, so a
+	// completed request must show up on the open stream.
+	if status, body := doJSONRequest(t, http.MethodGet, baseURL+"/api/logs/history", nil, map[string]string{
+		"Authorization": "Bearer " + token,
+	}); status != http.StatusOK {
+		t.Fatalf("history status = %d, want 200, body=%s", status, body)
+	}
+
+	deadline := time.After(5 * time.Second)
+	for {
+		select {
+		case frame, ok := <-frames:
+			if !ok {
+				t.Fatal("stream closed before the live entry arrived")
+			}
+			if strings.Contains(frame, "/api/logs/history") {
+				return
+			}
+		case <-deadline:
+			t.Fatal("live log entry did not arrive on the stream")
+		}
 	}
 }
 
@@ -349,6 +541,13 @@ func insertDefaultAdmin(t *testing.T, db *ent.Client) {
 func doJSONRequest(t *testing.T, method, target string, payload any, headers map[string]string) (int, string) {
 	t.Helper()
 
+	status, _, body := doJSONRequestWithClient(t, &http.Client{Timeout: time.Second * 5}, method, target, payload, headers)
+	return status, body
+}
+
+func doJSONRequestWithClient(t *testing.T, client *http.Client, method, target string, payload any, headers map[string]string) (int, http.Header, string) {
+	t.Helper()
+
 	var body io.Reader
 	if payload != nil {
 		raw, err := json.Marshal(payload)
@@ -369,7 +568,7 @@ func doJSONRequest(t *testing.T, method, target string, payload any, headers map
 		req.Header.Set(k, v)
 	}
 
-	resp, err := (&http.Client{Timeout: time.Second * 5}).Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("do request failed: %v", err)
 	}
@@ -379,7 +578,7 @@ func doJSONRequest(t *testing.T, method, target string, payload any, headers map
 	if err != nil {
 		t.Fatalf("read response body failed: %v", err)
 	}
-	return resp.StatusCode, string(raw)
+	return resp.StatusCode, resp.Header, string(raw)
 }
 
 type authTokenData struct {

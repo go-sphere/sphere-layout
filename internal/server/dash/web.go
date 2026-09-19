@@ -2,6 +2,7 @@ package dash
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/go-sphere/httpx"
@@ -32,7 +33,7 @@ func NewWebServer(conf Config, storage storage.CDNStorage, service *dash.Service
 	return &Web{
 		config:    conf,
 		acl:       acl.NewACL(),
-		engine:    httpsrv.NewGinServer("dash", conf.HTTP.Address, logger),
+		engine:    httpsrv.NewServer("dash", conf.HTTP.Address, logger),
 		service:   service,
 		sharedSvc: shared.NewService(storage, "dash"),
 	}
@@ -48,7 +49,18 @@ func (w *Web) Start(ctx context.Context) error {
 
 	authMiddleware := auth.NewAuthMiddleware(
 		jwtAuthorizer,
-		auth.WithHeaderLoader(auth.AuthorizationHeader),
+		auth.WithLoader(func(ctx httpx.Context) (string, error) {
+			// API clients send the Authorization header; browser requests that
+			// cannot set headers (page navigations, <img>, EventSource) fall
+			// back to the auth cookie written at login/refresh.
+			if header := strings.TrimSpace(ctx.Header(auth.AuthorizationHeader)); header != "" {
+				return header, nil
+			}
+			if cookie, err := ctx.Cookie(dash.AuthTokenCookieName); err == nil && cookie != "" {
+				return strings.TrimSpace(cookie), nil
+			}
+			return "", nil
+		}),
 		auth.WithPrefixTransform(auth.AuthorizationPrefixBearer),
 		auth.WithAbortOnError(true),
 	)
@@ -63,6 +75,9 @@ func (w *Web) Start(ctx context.Context) error {
 	w.RegisterDashStatic(w.engine.Group("/dash"))
 
 	api := w.engine.Group("/")
+	// Middleware on a group reaches the routes registered under it; the
+	// engine-wide layers (access log, recovery, CORS) live in httpsrv, where
+	// engine scope is what makes them cover unmatched paths as well.
 	needAuthRoute := api.Group("/", authMiddleware)
 	w.service.Init(jwtAuthorizer, jwtRefresher)
 

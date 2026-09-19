@@ -3,7 +3,7 @@
 ### Adapter for PureAdmin
 
 ```typescript
-import { Api, type GinxErrorResponse, HttpClient } from "@/api/swagger/Api";
+import { Api, type HttpzErrorResponse, HttpClient } from "@/api/swagger/Api";
 import { http } from "@/utils/http";
 import type { AxiosResponse } from "axios";
 import type { PureHttpError } from "@/utils/http/types";
@@ -29,7 +29,7 @@ function createNewAPI(): AdapterAPI<unknown> {
         resp => resp,
         (err: PureHttpError) => {
             if (!err.isCancelRequest && err.response?.data) {
-                const { code, message } = err.response.data as GinxErrorResponse;
+                const { code, message } = err.response.data as HttpzErrorResponse;
                 Object.assign(err, {
                     message: message || err.message,
                     errCode: code
