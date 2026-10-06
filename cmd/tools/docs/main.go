@@ -14,6 +14,12 @@ import (
 )
 
 func main() {
+	// sphere no longer sets the process timezone implicitly; keep the docs
+	// server on the same zone as cmd/app (see cmd/app/main.go).
+	if err := boot.InitTimezone(boot.DefaultTimezone); err != nil {
+		fmt.Fprintf(os.Stderr, "Boot error: init timezone: %v\n", err)
+		os.Exit(1)
+	}
 	conf := boot.DefaultConfigParser(config.BuildVersion, config.NewConfig)
 	err := boot.Run(conf, func(c *config.Config) (*boot.Application, error) {
 		return boot.NewApplication(docs.NewWebServer(c.Docs)), nil
