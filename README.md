@@ -153,3 +153,28 @@ make run
 ```
 
 Use `make help` to inspect the exact targets available in the checked-out template.
+
+### Default Dashboard Account
+
+When the database has no dashboard admin, the `initialize` task seeds one from
+`dash.seed_user` in `config.json`. If `dash.seed_user.username` or
+`dash.seed_user.password` is empty, it falls back to the built-in defaults
+`DefaultSeedUsername` / `DefaultSeedPassword` in
+`internal/server/dash/config.go` (username `admin`), and `make gen/conf` writes
+those same defaults into the generated config. Set your own credentials before
+the first run:
+
+```json
+{
+  "dash": {
+    "seed_user": {
+      "username": "your-admin",
+      "password": "a-strong-password"
+    }
+  }
+}
+```
+
+The seed runs only while no admin exists, so changing `seed_user` later does not
+modify an existing account. Change the seeded password before exposing the
+dashboard outside local development.
