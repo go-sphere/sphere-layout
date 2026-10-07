@@ -29,6 +29,26 @@ func TestInitializeSeedsConfiguredAdminWhenTableIsEmpty(t *testing.T) {
 	}
 }
 
+func TestInitializeGeneratesPasswordWhenSeedPasswordIsEmpty(t *testing.T) {
+	ctx := t.Context()
+	db := openDashInitDB(t)
+	seed := dash.SeedUserConfig{Username: " Seed-Admin "}
+
+	if err := NewDashInitialize(dao.NewDao(db), dash.Config{SeedUser: seed}).Start(ctx); err != nil {
+		t.Fatalf("initialize empty table: %v", err)
+	}
+	admin, err := db.Admin.Query().Only(ctx)
+	if err != nil {
+		t.Fatalf("load seeded admin: %v", err)
+	}
+	if admin.Username != "seed-admin" {
+		t.Fatalf("seeded username = %q, want seed-admin", admin.Username)
+	}
+	if secure.IsPasswordMatch("", admin.Password) {
+		t.Fatal("seeded admin must not accept an empty password")
+	}
+}
+
 func TestInitializeReseedsAfterAllAdminsDeleted(t *testing.T) {
 	ctx := t.Context()
 	db := openDashInitDB(t)
