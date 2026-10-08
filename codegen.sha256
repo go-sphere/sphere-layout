@@ -1,3 +1,4 @@
+# module github.com/go-sphere/sphere-layout
 dad74dc53be0bf74daf43f2a8e1c814f6d05656e58bfc0e38daeacbbc3280440  api/api/v1/auth.errors.pb.go
 f1350fbbcbaf825ae41dc3845320aedb6e2e2515a887211a7852c7508fc50465  api/api/v1/auth.pb.go
 300fbbc5d3ded5be968521541308087869cc0f18a9d4b0a2fddfa71ec4564cbc  api/api/v1/auth.sphere.pb.go
