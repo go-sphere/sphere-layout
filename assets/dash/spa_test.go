@@ -11,8 +11,8 @@ import (
 func TestDashSPAIsVue3LoginRefreshLogsPage(t *testing.T) {
 	html := readDashHTML(t)
 	for _, needle := range []string{
-		"boltcss/bolt.min.css",
-		"vue@3",
+		"bolt.min.css",
+		"vue@3.",
 		"Vue.createApp",
 		"/api/auth/login",
 		"/api/auth/refresh",
