@@ -25,6 +25,7 @@ import (
 	"github.com/go-sphere/sphere/cache/memory"
 	"github.com/go-sphere/sphere/log"
 	"github.com/go-sphere/sphere/log/logbuffer"
+	"github.com/go-sphere/sphere/server/auth/jwtauth"
 	"github.com/go-sphere/sphere/storage"
 	"github.com/go-sphere/sphere/utils/secure"
 )
@@ -190,6 +191,33 @@ func TestWebAuthAndAdminEndpoints(t *testing.T) {
 		})
 		if status != http.StatusUnauthorized {
 			t.Fatalf("status = %d, want %d, body=%s", status, http.StatusUnauthorized, body)
+		}
+	})
+
+	t.Run("unusable refresh token is rejected with 401", func(t *testing.T) {
+		baseURL, cleanup := setupTestWeb(t)
+		defer cleanup()
+
+		refresher := jwtauth.NewJwtAuth[jwtauth.RBACClaims[int64]]("test-refresh-jwt-secret")
+		sign := func(sessionID int64, expires time.Time) string {
+			t.Helper()
+			token, err := refresher.GenerateToken(t.Context(), jwtauth.NewRBACClaims(sessionID, "session-key", nil, expires))
+			if err != nil {
+				t.Fatalf("sign refresh token: %v", err)
+			}
+			return token
+		}
+		for name, token := range map[string]string{
+			"malformed":       "not-a-jwt",
+			"expired":         sign(1, time.Now().Add(-time.Hour)),
+			"unknown session": sign(999999, time.Now().Add(time.Hour)),
+		} {
+			status, body := doJSONRequest(t, http.MethodPost, baseURL+"/api/auth/refresh", map[string]string{
+				"refresh_token": token,
+			}, nil)
+			if status != http.StatusUnauthorized {
+				t.Errorf("%s refresh token: status = %d, want %d, body=%s", name, status, http.StatusUnauthorized, body)
+			}
 		}
 	})
 }
