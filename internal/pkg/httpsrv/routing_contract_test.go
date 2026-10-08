@@ -54,7 +54,7 @@ func rawRequest(t *testing.T, engine httpx.Engine, method, target string, header
 // answered with its own plain-text body, so these are the cases a client sees
 // when a path or method is wrong.
 func TestServerErrorResponsesUseTheJSONEnvelope(t *testing.T) {
-	engine := NewServer("test", "127.0.0.1:0", nil)
+	engine := NewServer("test", "127.0.0.1:0", nil, Options{})
 	registerAcceptanceRoutes(engine.Group(""))
 
 	t.Run("unknown path is a JSON 404", func(t *testing.T) {
@@ -90,7 +90,7 @@ func TestServerErrorResponsesUseTheJSONEnvelope(t *testing.T) {
 // while a group's middleware reaches only the routes registered under it.
 func TestServerAccessLogCoversUnmatchedPaths(t *testing.T) {
 	buf := logbuffer.New(32)
-	engine := NewServer("test", "127.0.0.1:0", buf)
+	engine := NewServer("test", "127.0.0.1:0", buf, Options{})
 	registerAcceptanceRoutes(engine.Group(""))
 
 	if status, body, _ := rawRequest(t, engine, http.MethodGet, "http://example.com/missing", nil); status != http.StatusNotFound {
@@ -111,7 +111,7 @@ func TestServerAccessLogCoversUnmatchedPaths(t *testing.T) {
 // under a different method. Both are unmatched paths, which only engine-scope
 // middleware covers; UseCORS registers on the engine for that reason.
 func TestServerCORSPreflightIsEngineWide(t *testing.T) {
-	engine := NewServer("test", "127.0.0.1:0", nil)
+	engine := NewServer("test", "127.0.0.1:0", nil, Options{})
 	registerAcceptanceRoutes(engine.Group(""))
 	if err := UseCORS(engine, []string{"https://example.com"}); err != nil {
 		t.Fatalf("UseCORS: %v", err)
@@ -138,7 +138,7 @@ func TestServerCORSPreflightIsEngineWide(t *testing.T) {
 // named wildcard resolves through Param. httpz.MatchOperation keys its route
 // policy map on exactly this pair.
 func TestServerFullPathFeedsMatchOperation(t *testing.T) {
-	engine := NewServer("test", "127.0.0.1:0", nil)
+	engine := NewServer("test", "127.0.0.1:0", nil, Options{})
 	matcher := httpz.MatchOperation("", [][3]string{{"download", http.MethodGet, "/files/*name"}}, "download")
 
 	engine.Group("").GET("/files/*name", func(ctx httpx.Context) error {
@@ -171,7 +171,7 @@ func TestServerFullPathFeedsMatchOperation(t *testing.T) {
 // four frameworks do not agree on them either. The request is a 404 here.
 // Clients that relied on the redirect have to use the exact path.
 func TestServerDoesNotRedirectTrailingSlash(t *testing.T) {
-	engine := NewServer("test", "127.0.0.1:0", nil)
+	engine := NewServer("test", "127.0.0.1:0", nil, Options{})
 	registerAcceptanceRoutes(engine.Group(""))
 
 	status, body, header := rawRequest(t, engine, http.MethodGet, "http://example.com/ping/", nil)

@@ -17,6 +17,7 @@ import (
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/client"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent"
 	"github.com/go-sphere/sphere-layout/internal/pkg/database/ent/user"
+	"github.com/go-sphere/sphere-layout/internal/pkg/httpsrv"
 	serviceapi "github.com/go-sphere/sphere-layout/internal/service/api"
 	"github.com/go-sphere/sphere/cache/memory"
 	spherefile "github.com/go-sphere/sphere/server/service/file"
@@ -24,41 +25,7 @@ import (
 )
 
 func TestPasswordAuthenticationFlow(t *testing.T) {
-	addr, baseURL := reserveAPIAddress(t)
-	db := newAPITestDatabase(t)
-	store, err := spherefile.NewLocalFileService(spherefile.LocalFileServiceConfig{
-		RootDir:    t.TempDir(),
-		PublicBase: baseURL + "/files",
-	})
-	if err != nil {
-		t.Fatalf("create test storage: %v", err)
-	}
-	service := serviceapi.NewService(dao.NewDao(db), memory.NewByteCache(), store)
-	web := NewWebServer(Config{
-		JWT: "api-test-secret",
-		HTTP: HTTPConfig{
-			Address: addr,
-		},
-	}, store, service, nil)
-
-	startErr := make(chan error, 1)
-	go func() {
-		startErr <- web.Start(t.Context())
-	}()
-	waitForAPI(t, baseURL+"/api/status")
-	t.Cleanup(func() {
-		stopCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		defer cancel()
-		_ = web.Stop(stopCtx)
-		select {
-		case err := <-startErr:
-			if err != nil && !errors.Is(err, http.ErrServerClosed) {
-				t.Errorf("server stopped with error: %v", err)
-			}
-		case <-time.After(3 * time.Second):
-			t.Error("server did not stop")
-		}
-	})
+	baseURL, db := startAPITestServer(t)
 
 	const password = "correct-horse-battery-staple"
 	status, _ := apiJSONRequest(t, http.MethodPost, baseURL+"/api/auth/register", map[string]string{
@@ -138,6 +105,84 @@ func TestPasswordAuthenticationFlow(t *testing.T) {
 	if strings.Contains(strings.ToLower(body), "password") {
 		t.Fatalf("authenticated me response leaked password data: %s", body)
 	}
+}
+
+func TestPasswordEndpointsAreRateLimitedPerClient(t *testing.T) {
+	baseURL, _ := startAPITestServer(t)
+
+	for _, target := range []string{"/api/auth/login", "/api/auth/register"} {
+		limited := false
+		for range authRateLimitBurst + 5 {
+			status, _ := apiJSONRequest(t, http.MethodPost, baseURL+target, map[string]string{
+				"username": "x",
+				"password": "y",
+			}, "")
+			if status == http.StatusTooManyRequests {
+				limited = true
+				break
+			}
+		}
+		if !limited {
+			t.Errorf("POST %s: no 429 after %d rapid requests", target, authRateLimitBurst+5)
+		}
+	}
+	if status, body := apiJSONRequest(t, http.MethodGet, baseURL+"/api/status", nil, ""); status != http.StatusOK {
+		t.Errorf("GET /api/status after the limit: status = %d, want 200, body=%s", status, body)
+	}
+}
+
+func TestOversizedBodyIsRejectedWith413(t *testing.T) {
+	baseURL, _ := startAPITestServer(t)
+
+	status, body := apiJSONRequest(t, http.MethodPost, baseURL+"/api/auth/register", map[string]string{
+		"username": strings.Repeat("a", int(httpsrv.DefaultMaxBodyBytes)),
+		"password": "y",
+	}, "")
+	if status != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want %d, body=%s", status, http.StatusRequestEntityTooLarge, body)
+	}
+}
+
+// startAPITestServer serves the api Web on a free local port until the test
+// ends and returns its base URL and database.
+func startAPITestServer(t *testing.T) (string, *ent.Client) {
+	t.Helper()
+	addr, baseURL := reserveAPIAddress(t)
+	db := newAPITestDatabase(t)
+	store, err := spherefile.NewLocalFileService(spherefile.LocalFileServiceConfig{
+		RootDir:    t.TempDir(),
+		PublicBase: baseURL + "/files",
+	})
+	if err != nil {
+		t.Fatalf("create test storage: %v", err)
+	}
+	service := serviceapi.NewService(dao.NewDao(db), memory.NewByteCache(), store)
+	web := NewWebServer(Config{
+		JWT: "api-test-secret",
+		HTTP: HTTPConfig{
+			Address: addr,
+		},
+	}, store, service, nil)
+
+	startErr := make(chan error, 1)
+	go func() {
+		startErr <- web.Start(t.Context())
+	}()
+	waitForAPI(t, baseURL+"/api/status")
+	t.Cleanup(func() {
+		stopCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		_ = web.Stop(stopCtx)
+		select {
+		case err := <-startErr:
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				t.Errorf("server stopped with error: %v", err)
+			}
+		case <-time.After(3 * time.Second):
+			t.Error("server did not stop")
+		}
+	})
+	return baseURL, db
 }
 
 type passwordAuthEnvelope struct {

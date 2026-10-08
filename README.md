@@ -128,7 +128,52 @@ After changing Proto files or bumping a generator, run
 moved. A failing check without such a change means the installed tools do not
 match `codegen.versions`.
 
+The baseline's first line, `# module <path>`, names the Go module it was
+recorded for: generated code embeds the module path, so a baseline only
+matches its own module. `make init` records the baseline last, which gives a
+project scaffolded under another module its own; `make codegen-check` asks for
+`make codegen-baseline` when go.mod and the baseline disagree. `make init` uses
+the committed `buf.lock` as is; refresh it deliberately with `make gen/deps`.
+
+## HTTP Server Limits
+
+`httpsrv.NewServer` takes `httpsrv.Options`, which is embedded in each
+server's HTTP config, so these keys sit next to `address` and `cors` in
+`dash.http`, `api.http` and `file` of `config.json`. `0` selects the default
+and a negative value disables the limit.
+
+- `read_timeout_seconds` (default 30) bounds reading a whole request, body
+  included; `idle_timeout_seconds` (default 120) bounds an idle keep-alive
+  connection.
+- `max_body_bytes` (default 4 MiB) caps a request body; reading past it
+  fails, and a JSON request that does is answered with 413. The file server,
+  which accepts uploads, defaults to 64 MiB and a 5-minute read timeout
+  instead.
+- `trusted_proxies` lists the reverse proxies (IPs or CIDRs) whose
+  `X-Forwarded-For` header is honoured. Set it when the service runs behind a
+  proxy: otherwise every client, and every per-IP rate limit, shares the
+  proxy's address. An invalid entry fails configuration loading.
+
 ## Upgrade Notes
+
+Template changes after the stdx migration:
+
+- `internal/pkg/httpsrv` sets read and idle timeouts, a request body cap and
+  trusted proxies from `httpsrv.Options` (see HTTP Server Limits), and
+  `NewServer(name, addr, backend, opts)` takes it as a fourth argument.
+- `POST /api/auth/login` and `/api/auth/register` on the api server are rate
+  limited per client IP (burst 10, then one per second); a limited request gets
+  429.
+- `POST /api/auth/refresh` on the dash server answers 401 instead of 500/404
+  for a malformed or expired refresh token, or one whose session or admin is
+  gone, so clients can send the user back to login.
+- `UploadToken` answers 400 for an empty filename instead of 500.
+- The unused `environments` config field is removed; it had no effect, and an
+  existing `config.json` that still carries it keeps loading.
+- The embedded dash page loads Vue 3.5.43 (production build) and boltcss 1.0.1
+  from unpkg with Subresource Integrity, instead of unpinned versions.
+- `.dockerignore` excludes `go.work` and `go.work.sum`, so a local workspace no
+  longer breaks `docker build`.
 
 This revision is a breaking template change: generated handlers are served by
 the `stdx` (net/http) engine from `httpx` / `httpx/stdx` v0.0.5, pinned together

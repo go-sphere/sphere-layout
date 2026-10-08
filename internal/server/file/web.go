@@ -16,6 +16,8 @@ type Config struct {
 	Address string   `json:"address" yaml:"address"`
 	Cors    []string `json:"cors" yaml:"cors"`
 	Debug   bool     `json:"debug" yaml:"debug"`
+
+	httpsrv.Options `yaml:",inline"`
 }
 
 type UploadResponse struct {
@@ -83,7 +85,7 @@ func bindDebugRoute(engine httpx.Engine, fileServer *fileserver.FileServer) {
 }
 
 func NewWebServer(conf Config, storage *fileserver.FileServer, logger log.Backend) (*file.Web, error) {
-	engine := httpsrv.NewServer("file", conf.Address, logger)
+	engine := httpsrv.NewServer("file", conf.Address, logger, conf.WithUploadDefaults())
 	if err := httpsrv.UseCORS(engine, conf.Cors); err != nil {
 		return nil, err
 	}

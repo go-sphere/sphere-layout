@@ -20,19 +20,17 @@ import (
 var BuildVersion = "dev"
 
 type Config struct {
-	Environments map[string]string                 `json:"environments" yaml:"environments"`
-	Log          zapx.Config                       `json:"log" yaml:"log"`
-	Database     client.Config                     `json:"database" yaml:"database"`
-	Dash         dash.Config                       `json:"dash" yaml:"dash"`
-	API          api.Config                        `json:"api" yaml:"api"`
-	File         fileweb.Config                    `json:"file" yaml:"file"`
-	Local        spherefile.LocalFileServiceConfig `json:"local" yaml:"local"`
-	Docs         docs.Config                       `json:"docs" yaml:"docs"`
+	Log      zapx.Config                       `json:"log" yaml:"log"`
+	Database client.Config                     `json:"database" yaml:"database"`
+	Dash     dash.Config                       `json:"dash" yaml:"dash"`
+	API      api.Config                        `json:"api" yaml:"api"`
+	File     fileweb.Config                    `json:"file" yaml:"file"`
+	Local    spherefile.LocalFileServiceConfig `json:"local" yaml:"local"`
+	Docs     docs.Config                       `json:"docs" yaml:"docs"`
 }
 
 func NewEmptyConfig() *Config {
 	return &Config{
-		Environments: map[string]string{},
 		Log: zapx.Config{
 			File: zapx.FileConfig{
 				FileName:   "./var/log/sphere.log",
@@ -100,6 +98,15 @@ func NewConfig(path string) (*Config, error) {
 	}
 	if config.API.JWT == "" {
 		return nil, fmt.Errorf("api jwt must be non-empty")
+	}
+	if err := config.Dash.HTTP.Validate(); err != nil {
+		return nil, fmt.Errorf("dash http: %w", err)
+	}
+	if err := config.API.HTTP.Validate(); err != nil {
+		return nil, fmt.Errorf("api http: %w", err)
+	}
+	if err := config.File.Validate(); err != nil {
+		return nil, fmt.Errorf("file: %w", err)
 	}
 	return config, nil
 }

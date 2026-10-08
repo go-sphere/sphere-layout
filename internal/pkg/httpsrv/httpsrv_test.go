@@ -55,7 +55,7 @@ func doRequest(t *testing.T, engine httpx.Engine, target string) (int, map[strin
 }
 
 func TestServerServesJSONRoutes(t *testing.T) {
-	engine := NewServer("test", "127.0.0.1:0", nil)
+	engine := NewServer("test", "127.0.0.1:0", nil, Options{})
 	registerAcceptanceRoutes(engine.Group(""))
 
 	status, payload := doRequest(t, engine, "http://example.com/ping")
@@ -86,7 +86,7 @@ func TestServerServesJSONRoutes(t *testing.T) {
 
 func TestServerAccessLogsGoToLogBuffer(t *testing.T) {
 	buf := logbuffer.New(32)
-	engine := NewServer("test", "127.0.0.1:0", buf)
+	engine := NewServer("test", "127.0.0.1:0", buf, Options{})
 	registerAcceptanceRoutes(engine.Group(""))
 
 	status, _ := doRequest(t, engine, "http://example.com/ping")
@@ -109,7 +109,7 @@ func TestServerAccessLogsGoToLogBuffer(t *testing.T) {
 
 func TestServerPanicIsRecovered(t *testing.T) {
 	buf := logbuffer.New(32)
-	engine := NewServer("test", "127.0.0.1:0", buf)
+	engine := NewServer("test", "127.0.0.1:0", buf, Options{})
 	engine.Group("").GET("/panic", func(httpx.Context) error {
 		panic("boom from handler")
 	})
@@ -149,7 +149,7 @@ func TestServerStopForceClosesHungRequest(t *testing.T) {
 	_ = ln.Close()
 
 	started := make(chan struct{})
-	engine := NewServer("test", addr, nil)
+	engine := NewServer("test", addr, nil, Options{})
 	engine.Group("").POST("/hang", func(ctx httpx.Context) error {
 		close(started)
 		<-ctx.Context().Done()
